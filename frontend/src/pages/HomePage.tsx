@@ -5,9 +5,8 @@ import { FeatureCard } from "../components/FeatureCard";
 import { TimeEstimate } from "../components/TimeEstimate";
 
 /**
- * InterviewPage currently requires location.state.investmentIdea.
- * Welcome does not collect an idea yet — this keeps the existing interview
- * guard working without changing Interview or routing.
+ * Interview still requires location.state.investmentIdea so Welcome can
+ * enter the wizard without changing routing. The idea is not collected here.
  */
 const INTERVIEW_BOOTSTRAP_IDEA = "New investment opportunity";
 
