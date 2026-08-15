@@ -1,4 +1,10 @@
-import type { OpportunityType, SectorOption, SelectOption } from "../types/interview";
+import type {
+  DevelopmentStage,
+  LocationSpecificity,
+  OpportunityType,
+  SectorOption,
+  SelectOption,
+} from "../types/interview";
 
 export const OPPORTUNITY_TYPE_OPTIONS: SelectOption<OpportunityType>[] = [
   {
@@ -172,6 +178,58 @@ export const PRODUCT_CHIPS_BY_ROOT: Record<string, string[]> = {
   tourism: ["Hotel", "Resort", "Mixed-use hospitality"],
 };
 
+export const LOCATION_SPECIFICITY_OPTIONS: SelectOption<LocationSpecificity>[] =
+  [
+    { value: "city_known", label: "City or site area is known" },
+    { value: "region_known", label: "Region / province only" },
+    {
+      value: "country_only",
+      label: "Country only — location not decided",
+    },
+  ];
+
+export const DEVELOPMENT_STAGE_OPTIONS: SelectOption<DevelopmentStage>[] = [
+  {
+    value: "concept",
+    label: "Concept / idea",
+    helper: "No formal studies yet",
+  },
+  {
+    value: "pre_feasibility",
+    label: "Pre-feasibility",
+    helper: "Screening; limited studies",
+  },
+  {
+    value: "feasibility",
+    label: "Feasibility / permitting",
+    helper: "Studies or permits in progress",
+  },
+  {
+    value: "ready_to_finance",
+    label: "Ready for financing",
+    helper: "Seeking capital or credit",
+  },
+  {
+    value: "construction",
+    label: "Construction or commissioning",
+    helper: "Capex being spent",
+  },
+  {
+    value: "operating",
+    label: "Operating — expansion or review",
+    helper: "Asset exists",
+  },
+];
+
+export const OPPORTUNITY_TYPE_ACK: Record<OpportunityType, string> = {
+  greenfield: "greenfield project",
+  expansion: "expansion of an existing operation",
+  brownfield: "acquisition or brownfield",
+  zone: "zone, park, or land platform",
+  asset_light: "service or asset-light opportunity",
+  other: "opportunity",
+};
+
 export const WIZARD_COPY = {
   framing: {
     title: "Before we start",
@@ -193,10 +251,35 @@ export const WIZARD_COPY = {
     message:
       "In one line, what will this investment produce or deliver? I’ll use this as the product definition — not a business plan.",
   },
+  q4: {
+    title: "Country",
+    message:
+      "Where is the investment located? Country is required for market and regulatory analysis.",
+    helper:
+      "If this is a multi-country platform, pick the primary country. You can note others on Review.",
+    restrictedWarning:
+      "This geography requires admin review before a report can be published.",
+    restrictedAck: "I understand analysis may be held for review.",
+  },
+  q5: {
+    title: "Location detail",
+    cityLabel: "City or site area",
+    regionLabel: "Region or province",
+    cityPlaceholder: "e.g. Gaziantep",
+    regionPlaceholder: "e.g. Lower Silesia",
+  },
+  q6: {
+    title: "Development stage",
+    message:
+      "Where is this in the development cycle? Stage changes how hard I should treat missing offtake, permits, and site control.",
+  },
 } as const;
 
 export const MINUTES_LEFT_BY_STEP = {
   q1: 8,
   q2: 7,
   q3: 6,
+  q4: 5,
+  q5: 4,
+  q6: 3,
 } as const;

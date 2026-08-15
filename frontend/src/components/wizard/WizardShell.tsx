@@ -7,6 +7,7 @@ type WizardShellProps = {
   questionNumber?: number;
   questionTotal?: number;
   minutesLeft?: number;
+  workingTitle?: string;
 };
 
 export function WizardShell({
@@ -15,6 +16,7 @@ export function WizardShell({
   questionNumber,
   questionTotal,
   minutesLeft,
+  workingTitle = "New opportunity",
 }: WizardShellProps) {
   const showProgress =
     questionNumber !== undefined &&
@@ -28,7 +30,7 @@ export function WizardShell({
           <p className="text-sm font-medium uppercase tracking-widest text-emerald-400">
             Invest Smarter
           </p>
-          <p className="truncate text-sm text-slate-400">New opportunity</p>
+          <p className="truncate text-sm text-slate-400">{workingTitle}</p>
         </div>
       </header>
 

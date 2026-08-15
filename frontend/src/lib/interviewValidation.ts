@@ -1,3 +1,4 @@
+import { getCountry } from "../mocks/countries";
 import { SECTOR_TAXONOMY } from "../mocks/interview";
 import type { InterviewDraft } from "../types/interview";
 
@@ -11,6 +12,9 @@ export const VALIDATION_COPY = {
     "Enter a sector of 3–40 characters using letters, numbers, spaces, or hyphens",
   productLength: "Describe the output in 8–80 characters",
   productContact: "Remove any URL or email — this should be a product, not a link",
+  country: "Choose a country from the list",
+  restrictedAck: "Confirm you understand analysis may be held for review",
+  locationText: "Enter a city or region of 2–60 characters",
 } as const;
 
 export function isOtherSector(code: string | null): boolean {
@@ -45,4 +49,28 @@ export function validateProduct(draft: InterviewDraft): string | null {
     return VALIDATION_COPY.productContact;
   }
   return null;
+}
+
+export function validateCountry(draft: InterviewDraft): string | null {
+  const country = getCountry(draft.countryCode);
+  if (!country) return VALIDATION_COPY.country;
+  if (country.risk_tier === "restricted" && !draft.restrictedGeoAck) {
+    return VALIDATION_COPY.restrictedAck;
+  }
+  return null;
+}
+
+export function validateLocation(draft: InterviewDraft): string | null {
+  if (!draft.locationSpecificity) return VALIDATION_COPY.selectOption;
+  if (draft.locationSpecificity === "country_only") return null;
+
+  const value = draft.locationText.trim();
+  if (value.length < 2 || value.length > 60) {
+    return VALIDATION_COPY.locationText;
+  }
+  return null;
+}
+
+export function validateDevelopmentStage(draft: InterviewDraft): string | null {
+  return draft.developmentStage ? null : VALIDATION_COPY.selectOption;
 }
