@@ -1,19 +1,29 @@
 import { useRef, useState } from "react";
+import { presentDecisionCard } from "../lib/presentDecisionCard";
 import {
+  validateBuyerType,
+  validateCapitalScale,
   validateCountry,
   validateDevelopmentStage,
+  validateEvaluationContext,
+  validateInterviewDraft,
   validateLocation,
   validateOpportunityType,
   validateProduct,
   validateSector,
 } from "../lib/interviewValidation";
 import { getCountry } from "../mocks/countries";
-import { MINUTES_LEFT_BY_STEP } from "../mocks/interview";
+import { MINUTES_LEFT_BY_STEP, WIZARD_COPY } from "../mocks/interview";
+import { buildMockDecisionObject } from "../mocks/mockDecisionObject";
+import type { DecisionObjectV01 } from "../types/decision";
 import {
   EMPTY_INTERVIEW_DRAFT,
   WIZARD_QUESTION_TOTAL,
+  type BuyerType,
+  type CapexRange,
   type CountryOption,
   type DevelopmentStage,
+  type EvaluationContext,
   type InterviewDraft,
   type LocationSpecificity,
   type OpportunityType,
@@ -29,7 +39,13 @@ const STEP_SEQUENCE: WizardStepId[] = [
   "q4",
   "q5",
   "q6",
+  "q7",
+  "q8",
+  "q9",
+  "review",
 ];
+
+const CARD_STEPS: WizardStepId[] = ["q1", "q6", "q7", "q8", "q9"];
 
 function workingTitleFrom(draft: InterviewDraft): string {
   const country = getCountry(draft.countryCode);
@@ -44,11 +60,17 @@ function workingTitleFrom(draft: InterviewDraft): string {
   return `${sector} — ${country.name}`;
 }
 
+function defaultCurrency(draft: InterviewDraft): string {
+  return getCountry(draft.countryCode)?.currency ?? "USD";
+}
+
 export function useInterviewWizard() {
   const [step, setStep] = useState<WizardStepId>("framing");
   const [draft, setDraft] = useState<InterviewDraft>(EMPTY_INTERVIEW_DRAFT);
   const [error, setError] = useState<string | null>(null);
-  const [reachedEnd, setReachedEnd] = useState(false);
+  const [recommendation, setRecommendation] = useState<DecisionObjectV01 | null>(
+    null
+  );
   const fieldsetRef = useRef<HTMLFieldSetElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const ackRef = useRef<HTMLInputElement>(null);
@@ -56,7 +78,7 @@ export function useInterviewWizard() {
   function patchDraft(patch: Partial<InterviewDraft>) {
     setDraft((current) => ({ ...current, ...patch }));
     setError(null);
-    setReachedEnd(false);
+    setRecommendation(null);
   }
 
   function validateStep(current: WizardStepId, snapshot: InterviewDraft) {
@@ -66,12 +88,15 @@ export function useInterviewWizard() {
     if (current === "q4") return validateCountry(snapshot);
     if (current === "q5") return validateLocation(snapshot);
     if (current === "q6") return validateDevelopmentStage(snapshot);
+    if (current === "q7") return validateCapitalScale(snapshot);
+    if (current === "q8") return validateEvaluationContext(snapshot);
+    if (current === "q9") return validateBuyerType(snapshot);
     return null;
   }
 
   function focusErrorControl() {
     requestAnimationFrame(() => {
-      if (step === "q1" || step === "q6") {
+      if (CARD_STEPS.includes(step)) {
         fieldsetRef.current?.focus();
         return;
       }
@@ -99,37 +124,57 @@ export function useInterviewWizard() {
     });
   }
 
-  function goPrevious() {
+  function moveTo(next: WizardStepId) {
     setError(null);
-    setReachedEnd(false);
+    setStep(next);
+    window.scrollTo(0, 0);
+  }
+
+  function goToStep(next: WizardStepId) {
+    moveTo(next);
+  }
+
+  function goPrevious() {
+    if (step === "decision") {
+      moveTo("review");
+      return;
+    }
     const index = STEP_SEQUENCE.indexOf(step);
-    if (index > 0) setStep(STEP_SEQUENCE[index - 1]);
+    if (index > 0) moveTo(STEP_SEQUENCE[index - 1]);
   }
 
   function goNext() {
     if (step === "framing") {
-      setStep("q1");
+      moveTo("q1");
       return;
     }
 
     const message = validateStep(step, draft);
     if (message) {
       setError(message);
-      setReachedEnd(false);
       focusErrorControl();
       return;
     }
 
     const next = STEP_SEQUENCE[STEP_SEQUENCE.indexOf(step) + 1];
-    setError(null);
+    if (next) moveTo(next);
+  }
 
-    if (!next) {
-      setReachedEnd(true);
+  function seeRecommendation() {
+    const invalid = validateInterviewDraft(draft);
+    if (invalid) {
+      setError(WIZARD_COPY.review.incompleteError);
       return;
     }
 
-    setReachedEnd(false);
-    setStep(next);
+    const decision = buildMockDecisionObject(draft);
+    if (!decision) {
+      setError(WIZARD_COPY.review.incompleteError);
+      return;
+    }
+
+    setRecommendation(decision);
+    moveTo("decision");
   }
 
   function setOpportunityType(value: OpportunityType) {
@@ -156,6 +201,7 @@ export function useInterviewWizard() {
     patchDraft({
       countryCode: country.code,
       restrictedGeoAck: false,
+      currency: draft.currency ?? country.currency,
     });
   }
 
@@ -175,19 +221,42 @@ export function useInterviewWizard() {
     patchDraft({ developmentStage: value });
   }
 
-  const question =
-    step === "framing"
-      ? undefined
-      : {
-          number: Number(step.slice(1)),
-          minutesLeft: MINUTES_LEFT_BY_STEP[step],
-        };
+  function setCurrency(value: string) {
+    patchDraft({ currency: value });
+  }
+
+  function setCapexRange(value: CapexRange) {
+    patchDraft({
+      capexRange: value,
+      currency: draft.currency ?? defaultCurrency(draft),
+    });
+  }
+
+  function setEvaluationContext(value: EvaluationContext) {
+    patchDraft({ evaluationContext: value });
+  }
+
+  function setBuyerType(value: BuyerType) {
+    patchDraft({ buyerType: value });
+  }
+
+  const isQuestionStep = step.startsWith("q");
+  const question = isQuestionStep
+    ? {
+        number: Number(step.slice(1)),
+        minutesLeft: MINUTES_LEFT_BY_STEP[step as keyof typeof MINUTES_LEFT_BY_STEP],
+      }
+    : undefined;
+
+  const decisionView =
+    recommendation && step === "decision"
+      ? presentDecisionCard(recommendation, draft)
+      : null;
 
   return {
     step,
     draft,
     error,
-    reachedEnd,
     fieldsetRef,
     inputRef,
     ackRef,
@@ -195,8 +264,11 @@ export function useInterviewWizard() {
     questionNumber: question?.number,
     questionTotal: WIZARD_QUESTION_TOTAL,
     minutesLeft: question?.minutesLeft,
+    decisionView,
     goPrevious,
     goNext,
+    goToStep,
+    seeRecommendation,
     setOpportunityType,
     setSector,
     setSectorOther,
@@ -206,5 +278,9 @@ export function useInterviewWizard() {
     setLocationSpecificity,
     setLocationText,
     setDevelopmentStage,
+    setCurrency,
+    setCapexRange,
+    setEvaluationContext,
+    setBuyerType,
   };
 }

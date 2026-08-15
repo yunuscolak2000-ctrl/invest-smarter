@@ -74,3 +74,41 @@ export function validateLocation(draft: InterviewDraft): string | null {
 export function validateDevelopmentStage(draft: InterviewDraft): string | null {
   return draft.developmentStage ? null : VALIDATION_COPY.selectOption;
 }
+
+export function validateCapitalScale(draft: InterviewDraft): string | null {
+  if (!draft.currency || !draft.capexRange) return VALIDATION_COPY.selectOption;
+  return null;
+}
+
+export function validateEvaluationContext(draft: InterviewDraft): string | null {
+  return draft.evaluationContext ? null : VALIDATION_COPY.selectOption;
+}
+
+export function validateBuyerType(draft: InterviewDraft): string | null {
+  return draft.buyerType ? null : VALIDATION_COPY.selectOption;
+}
+
+const DRAFT_CHECKS: {
+  step: "q1" | "q2" | "q3" | "q4" | "q5" | "q6" | "q7" | "q8" | "q9";
+  validate: (draft: InterviewDraft) => string | null;
+}[] = [
+  { step: "q1", validate: validateOpportunityType },
+  { step: "q2", validate: validateSector },
+  { step: "q3", validate: validateProduct },
+  { step: "q4", validate: validateCountry },
+  { step: "q5", validate: validateLocation },
+  { step: "q6", validate: validateDevelopmentStage },
+  { step: "q7", validate: validateCapitalScale },
+  { step: "q8", validate: validateEvaluationContext },
+  { step: "q9", validate: validateBuyerType },
+];
+
+export function validateInterviewDraft(
+  draft: InterviewDraft
+): { step: (typeof DRAFT_CHECKS)[number]["step"]; message: string } | null {
+  for (const check of DRAFT_CHECKS) {
+    const message = check.validate(draft);
+    if (message) return { step: check.step, message };
+  }
+  return null;
+}

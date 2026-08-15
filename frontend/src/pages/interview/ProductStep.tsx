@@ -10,7 +10,6 @@ type ProductStepProps = {
   onChange: (value: string) => void;
   error: string | null;
   controlRef: Ref<HTMLInputElement>;
-  reachedEnd: boolean;
 };
 
 function chipsForSector(code: string | null): string[] {
@@ -24,7 +23,6 @@ export function ProductStep({
   onChange,
   error,
   controlRef,
-  reachedEnd,
 }: ProductStepProps) {
   const chips = chipsForSector(draft.sectorCode);
 
@@ -56,13 +54,6 @@ export function ProductStep({
         helper="8–80 characters. Chips fill this field — you can edit them."
         error={error}
       />
-
-      {reachedEnd ? (
-        <p className="rounded-2xl border border-slate-800 bg-slate-900 px-4 py-3 text-sm text-slate-400">
-          Product captured. Questions 4–12 are not in this sprint. You can go
-          back and edit these answers.
-        </p>
-      ) : null}
     </section>
   );
 }

@@ -20,7 +20,12 @@ export type WizardStepId =
   | "q3"
   | "q4"
   | "q5"
-  | "q6";
+  | "q6"
+  | "q7"
+  | "q8"
+  | "q9"
+  | "review"
+  | "decision";
 
 export type OpportunityType =
   | "greenfield"
@@ -58,6 +63,30 @@ export type DevelopmentStage =
   | "construction"
   | "operating";
 
+export type CapexRange =
+  | "lt_5m"
+  | "5_25m"
+  | "25_100m"
+  | "100_500m"
+  | "gt_500m"
+  | "not_sure";
+
+export type EvaluationContext =
+  | "consultant_client"
+  | "ipa_inbound"
+  | "sponsor_own"
+  | "bank_screen"
+  | "zone_developer"
+  | "public_agency";
+
+export type BuyerType =
+  | "b2b_contract"
+  | "b2b_spot"
+  | "b2c"
+  | "b2g"
+  | "mixed"
+  | "unknown";
+
 export type CountryRiskTier = "standard" | "restricted";
 
 export type CountryOption = {
@@ -78,6 +107,10 @@ export type InterviewDraft = {
   locationSpecificity: LocationSpecificity | null;
   locationText: string;
   developmentStage: DevelopmentStage | null;
+  currency: string | null;
+  capexRange: CapexRange | null;
+  evaluationContext: EvaluationContext | null;
+  buyerType: BuyerType | null;
 };
 
 export const EMPTY_INTERVIEW_DRAFT: InterviewDraft = {
@@ -91,6 +124,10 @@ export const EMPTY_INTERVIEW_DRAFT: InterviewDraft = {
   locationSpecificity: null,
   locationText: "",
   developmentStage: null,
+  currency: null,
+  capexRange: null,
+  evaluationContext: null,
+  buyerType: null,
 };
 
 export const WIZARD_QUESTION_TOTAL = 12;

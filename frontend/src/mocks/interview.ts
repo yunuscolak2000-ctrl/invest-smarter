@@ -1,5 +1,8 @@
 import type {
+  BuyerType,
+  CapexRange,
   DevelopmentStage,
+  EvaluationContext,
   LocationSpecificity,
   OpportunityType,
   SectorOption,
@@ -188,6 +191,105 @@ export const LOCATION_SPECIFICITY_OPTIONS: SelectOption<LocationSpecificity>[] =
     },
   ];
 
+export const CAPEX_RANGE_BASE: SelectOption<CapexRange>[] = [
+  { value: "lt_5m", label: "Under 5 million" },
+  { value: "5_25m", label: "5–25 million" },
+  { value: "25_100m", label: "25–100 million" },
+  { value: "100_500m", label: "100–500 million" },
+  { value: "gt_500m", label: "Over 500 million" },
+  { value: "not_sure", label: "Not sure yet" },
+];
+
+/** Always-visible currencies on Q7. Country ISO 4217 is added if different. */
+export const PRIMARY_CURRENCIES = ["USD", "EUR"] as const;
+
+/** Opened by Q7 “Other”. Filtered against the three visible codes, then capped at 10. */
+export const OTHER_CURRENCY_POOL = [
+  "GBP",
+  "JPY",
+  "CHF",
+  "CAD",
+  "AUD",
+  "CNY",
+  "AED",
+  "SAR",
+  "SGD",
+  "INR",
+  "PLN",
+  "TRY",
+  "MXN",
+  "ZAR",
+  "KRW",
+] as const;
+
+export function visibleCurrencies(countryCurrency: string | null): string[] {
+  const codes = new Set<string>(PRIMARY_CURRENCIES);
+  if (countryCurrency) codes.add(countryCurrency);
+  return [...codes].slice(0, 3);
+}
+
+export function otherCurrencies(visible: string[]): string[] {
+  return OTHER_CURRENCY_POOL.filter((code) => !visible.includes(code)).slice(
+    0,
+    10
+  );
+}
+
+export function capexRangeOptions(
+  currency: string
+): SelectOption<CapexRange>[] {
+  return CAPEX_RANGE_BASE.map((option) =>
+    option.value === "not_sure"
+      ? option
+      : { ...option, label: `${option.label} ${currency}` }
+  );
+}
+
+export const EVALUATION_CONTEXT_OPTIONS: SelectOption<EvaluationContext>[] = [
+  {
+    value: "consultant_client",
+    label: "Consultant advising a client",
+    helper: "Client-presentable pre-feasibility",
+  },
+  {
+    value: "ipa_inbound",
+    label: "IPA screening an investor",
+    helper: "Inbound inquiry / promotion response",
+  },
+  {
+    value: "sponsor_own",
+    label: "Sponsor evaluating our own project",
+    helper: "Internal go / no-go",
+  },
+  {
+    value: "bank_screen",
+    label: "Bank or lender — early screen",
+    helper: "Credit / mandate filter, not full model",
+  },
+  {
+    value: "zone_developer",
+    label: "Zone or park developer",
+    helper: "Tenant / land allocation fit",
+  },
+  {
+    value: "public_agency",
+    label: "Public agency / development institution",
+    helper: "Mandate or program fit",
+  },
+];
+
+export const BUYER_TYPE_OPTIONS: SelectOption<BuyerType>[] = [
+  {
+    value: "b2b_contract",
+    label: "B2B — contracted (PPA, offtake, offtake LOI)",
+  },
+  { value: "b2b_spot", label: "B2B — open / spot market" },
+  { value: "b2c", label: "B2C / retail demand" },
+  { value: "b2g", label: "Government or public procurement" },
+  { value: "mixed", label: "Mixed channels" },
+  { value: "unknown", label: "Not defined yet" },
+];
+
 export const DEVELOPMENT_STAGE_OPTIONS: SelectOption<DevelopmentStage>[] = [
   {
     value: "concept",
@@ -273,6 +375,53 @@ export const WIZARD_COPY = {
     message:
       "Where is this in the development cycle? Stage changes how hard I should treat missing offtake, permits, and site control.",
   },
+  q7: {
+    title: "Investment scale",
+    message:
+      "What is the approximate total capital requirement? A range is enough; I will not treat it as a point estimate.",
+    currencyLabel: "Currency",
+    otherLabel: "Other",
+    notSureConfirm:
+      "Scale recorded as unknown. The financial module will run with lower confidence.",
+  },
+  q8: {
+    title: "Who is evaluating this",
+    message:
+      "Who is this evaluation for? That sets the mandate test and the tone of the recommendation.",
+  },
+  q9: {
+    title: "Who buys the output",
+    message:
+      "Who is expected to buy the output? Demand path drives both market scoring and revenue logic.",
+    unknownConfirm:
+      "Buyer type recorded as undefined. Demand path will be scored as incomplete.",
+  },
+  review: {
+    title: "Review your answers",
+    message:
+      "Confirm these facts before I recommend. You can open any row to change it. I will not invent missing answers.",
+    incompleteNote:
+      "Demand certainty, site control, and the decision needed are not in this interview yet.",
+    incompleteError:
+      "Some answers are incomplete. Open a row to fix them.",
+    nextLabel: "See recommendation",
+  },
+  decision: {
+    editLabel: "Edit answers",
+    policyLabel: "Intake policy v0.1",
+    status: "Intake screen · 9 of 12 questions · Recommendation, not accepted",
+    publicationHeld: "Publication held for review",
+    confidenceSuffix: "evidence quality",
+    bankDisclaimer: "This is not a credit approval.",
+    disclaimer:
+      "This is an intake screen, not a feasibility study, not investment advice, not a bankable model, and not legal or technical due diligence. Rules produced this recommendation. A named person has not accepted it.",
+    defect:
+      "Recommendation could not be produced. Return to Review.",
+    incompleteWhy:
+      "Demand certainty, site control, and the decision needed were not collected. Unconditional proceed is not available on this interview.",
+    nextCommission:
+      "Do not commission a feasibility study on this recommendation.",
+  },
 } as const;
 
 export const MINUTES_LEFT_BY_STEP = {
@@ -282,4 +431,7 @@ export const MINUTES_LEFT_BY_STEP = {
   q4: 5,
   q5: 4,
   q6: 3,
+  q7: 3,
+  q8: 2,
+  q9: 2,
 } as const;

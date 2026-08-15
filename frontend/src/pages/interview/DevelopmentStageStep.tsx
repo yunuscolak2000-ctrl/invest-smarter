@@ -9,7 +9,6 @@ type DevelopmentStageStepProps = {
   onChange: (value: DevelopmentStage) => void;
   error: string | null;
   controlRef: Ref<HTMLFieldSetElement>;
-  reachedEnd: boolean;
 };
 
 export function DevelopmentStageStep({
@@ -17,7 +16,6 @@ export function DevelopmentStageStep({
   onChange,
   error,
   controlRef,
-  reachedEnd,
 }: DevelopmentStageStepProps) {
   return (
     <section className="space-y-6">
@@ -30,12 +28,6 @@ export function DevelopmentStageStep({
         onChange={(next) => onChange(next as DevelopmentStage)}
         error={error}
       />
-      {reachedEnd ? (
-        <p className="rounded-2xl border border-slate-800 bg-slate-900 px-4 py-3 text-sm text-slate-400">
-          Development stage captured. Questions 7–12 are not in this sprint. You
-          can go back and edit these answers.
-        </p>
-      ) : null}
     </section>
   );
 }
