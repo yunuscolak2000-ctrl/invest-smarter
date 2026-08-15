@@ -12,9 +12,9 @@ import {
   validateProduct,
   validateSector,
 } from "../lib/interviewValidation";
+import { evaluateDecisionV01 } from "../lib/decisionRulesV01";
 import { getCountry } from "../mocks/countries";
 import { MINUTES_LEFT_BY_STEP, WIZARD_COPY } from "../mocks/interview";
-import { buildMockDecisionObject } from "../mocks/mockDecisionObject";
 import type { DecisionObjectV01 } from "../types/decision";
 import {
   EMPTY_INTERVIEW_DRAFT,
@@ -167,7 +167,7 @@ export function useInterviewWizard() {
       return;
     }
 
-    const decision = buildMockDecisionObject(draft);
+    const decision = evaluateDecisionV01(draft);
     if (!decision) {
       setError(WIZARD_COPY.review.incompleteError);
       return;
