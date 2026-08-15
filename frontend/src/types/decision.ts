@@ -4,6 +4,16 @@ export type DecisionPosture =
   | "defer"
   | "do_not_pursue";
 
+/** Human overlay only. Never written by rules.v0.1. */
+export type EvaluatorDecisionStatus =
+  | "not_accepted"
+  | "accepted"
+  | "amended"
+  | "rejected";
+
+export const DEFAULT_EVALUATOR_STATUS: EvaluatorDecisionStatus =
+  "not_accepted";
+
 export type ConfidenceBand = "low" | "medium" | "high";
 
 export type MandateTension = "none" | "mild" | "severe";

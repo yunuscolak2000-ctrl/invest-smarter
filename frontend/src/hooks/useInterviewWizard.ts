@@ -18,7 +18,11 @@ import {
 import { evaluateDecisionV01 } from "../lib/decisionRulesV01";
 import { getCountry } from "../mocks/countries";
 import { MINUTES_LEFT_BY_STEP, WIZARD_COPY } from "../mocks/interview";
-import type { DecisionObjectV01 } from "../types/decision";
+import {
+  DEFAULT_EVALUATOR_STATUS,
+  type DecisionObjectV01,
+  type EvaluatorDecisionStatus,
+} from "../types/decision";
 import {
   EMPTY_INTERVIEW_DRAFT,
   WIZARD_QUESTION_TOTAL,
@@ -89,6 +93,9 @@ export function useInterviewWizard() {
   const [recommendation, setRecommendation] = useState<DecisionObjectV01 | null>(
     null
   );
+  const [evaluatorStatus, setEvaluatorStatus] = useState<EvaluatorDecisionStatus>(
+    DEFAULT_EVALUATOR_STATUS
+  );
   const fieldsetRef = useRef<HTMLFieldSetElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const ackRef = useRef<HTMLInputElement>(null);
@@ -97,6 +104,7 @@ export function useInterviewWizard() {
     setDraft((current) => ({ ...current, ...patch }));
     setError(null);
     setRecommendation(null);
+    setEvaluatorStatus(DEFAULT_EVALUATOR_STATUS);
   }
 
   function validateStep(current: WizardStepId, snapshot: InterviewDraft) {
@@ -195,6 +203,7 @@ export function useInterviewWizard() {
     }
 
     setRecommendation(decision);
+    setEvaluatorStatus(DEFAULT_EVALUATOR_STATUS);
     moveTo("decision");
   }
 
@@ -283,7 +292,7 @@ export function useInterviewWizard() {
 
   const decisionView =
     recommendation && step === "decision"
-      ? presentDecisionCard(recommendation, draft)
+      ? presentDecisionCard(recommendation, draft, evaluatorStatus)
       : null;
 
   return {
@@ -298,6 +307,8 @@ export function useInterviewWizard() {
     questionTotal: WIZARD_QUESTION_TOTAL,
     minutesLeft: question?.minutesLeft,
     decisionView,
+    evaluatorStatus,
+    setEvaluatorStatus,
     goPrevious,
     goNext,
     goToStep,

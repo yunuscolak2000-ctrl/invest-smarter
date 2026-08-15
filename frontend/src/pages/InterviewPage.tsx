@@ -191,7 +191,13 @@ export default function InterviewPage() {
         />
       ) : null}
 
-      {isDecision ? <DecisionCardScreen view={wizard.decisionView} /> : null}
+      {isDecision ? (
+        <DecisionCardScreen
+          view={wizard.decisionView}
+          evaluatorStatus={wizard.evaluatorStatus}
+          onEvaluatorStatus={wizard.setEvaluatorStatus}
+        />
+      ) : null}
     </WizardShell>
   );
 }

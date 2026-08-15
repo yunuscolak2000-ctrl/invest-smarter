@@ -515,15 +515,37 @@ export const WIZARD_COPY = {
     editLabel: "Edit answers",
     policyLabel: "Intake policy v0.1",
     status: "Intake screen · 12 of 12 questions · Recommendation, not accepted",
+    statusAccepted:
+      "Intake screen · 12 of 12 questions · Recommendation accepted",
+    statusAmended:
+      "Intake screen · 12 of 12 questions · Recommendation amended",
+    statusRejected:
+      "Intake screen · 12 of 12 questions · Recommendation rejected",
     publicationHeld: "Publication held for review",
     confidenceSuffix: "evidence quality",
     bankDisclaimer: "This is not a credit approval.",
     disclaimer:
       "This is an intake screen, not a feasibility study, not investment advice, not a bankable model, and not legal or technical due diligence. Rules produced this recommendation. A named person has not accepted it.",
+    disclaimerRecorded:
+      "This is an intake screen, not a feasibility study, not investment advice, not a bankable model, and not legal or technical due diligence. Rules produced this recommendation.",
     defect:
       "Recommendation could not be produced. Return to Review.",
     nextCommission:
       "Do not commission a feasibility study on this recommendation.",
+    evaluator: {
+      sectionLabel: "Evaluator decision",
+      helper:
+        "Record how the evaluator treats this recommendation. This does not change the rules output.",
+      accept: "Accept recommendation",
+      amend: "Amend recommendation",
+      reject: "Reject recommendation",
+      accepted:
+        "The evaluator accepted this recommendation as written.",
+      amended:
+        "The evaluator amended this recommendation. The rules output remains unchanged.",
+      rejected:
+        "The evaluator rejected this recommendation. The rules output remains unchanged.",
+    },
   },
 } as const;
 

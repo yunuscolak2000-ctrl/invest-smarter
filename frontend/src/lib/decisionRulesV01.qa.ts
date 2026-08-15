@@ -1,6 +1,9 @@
 /**
  * Lightweight rules.v0.1 QA. Not a test runner. Not imported by the UI.
  *
+ * Evaluator status (Sprint 3.5) is a client overlay. It must not change
+ * posture, confidence, or conditions. Do not pass it into evaluateDecisionV01.
+ *
  * Later, with Vitest:
  *   import { verifyDecisionRulesV01 } from "./decisionRulesV01.qa";
  *   expect(verifyDecisionRulesV01().failed).toBe(0);
@@ -309,8 +312,48 @@ function runCase(item: QaCase): QaCheck[] {
   return checks;
 }
 
+function evaluatorOverlayChecks(): QaCheck[] {
+  const decision = evaluateDecisionV01(FIXTURE_STRONG);
+  if (!decision) {
+    return [
+      check(
+        "evaluator-overlay",
+        false,
+        "strong fixture must evaluate so overlay can be compared"
+      ),
+    ];
+  }
+
+  const baseline = presentDecisionCard(decision, FIXTURE_STRONG, "not_accepted");
+  const statuses = ["accepted", "amended", "rejected"] as const;
+  const checks: QaCheck[] = [];
+
+  for (const status of statuses) {
+    const view = presentDecisionCard(decision, FIXTURE_STRONG, status);
+    checks.push(
+      check(
+        "evaluator-overlay",
+        view.postureTitle === baseline.postureTitle,
+        `${status} must not change posture`
+      ),
+      check(
+        "evaluator-overlay",
+        view.confidenceLine === baseline.confidenceLine,
+        `${status} must not change confidence`
+      ),
+      check(
+        "evaluator-overlay",
+        JSON.stringify(view.conditions) === JSON.stringify(baseline.conditions),
+        `${status} must not change conditions`
+      )
+    );
+  }
+
+  return checks;
+}
+
 export function verifyDecisionRulesV01(): QaReport {
-  const checks = CASES.flatMap(runCase);
+  const checks = [...CASES.flatMap(runCase), ...evaluatorOverlayChecks()];
   const failed = checks.filter((item) => !item.ok).length;
   return {
     passed: checks.length - failed,

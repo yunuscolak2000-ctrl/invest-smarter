@@ -1,5 +1,9 @@
 import { WIZARD_COPY } from "../mocks/interview";
-import type { DecisionObjectV01 } from "../types/decision";
+import {
+  DEFAULT_EVALUATOR_STATUS,
+  type DecisionObjectV01,
+  type EvaluatorDecisionStatus,
+} from "../types/decision";
 import type { InterviewDraft } from "../types/interview";
 import { identityMeta, identityTitle } from "./interviewLabels";
 
@@ -137,7 +141,7 @@ function nextBullets(decision: DecisionObjectV01): string[] {
       );
     } else {
       next.push(
-        "A named person still has to accept this recommendation. This screen does not issue an unconditional proceed."
+        "This screen does not issue an unconditional proceed."
       );
     }
   }
@@ -160,9 +164,17 @@ function nextBullets(decision: DecisionObjectV01): string[] {
   return next.slice(0, 4);
 }
 
+function statusLine(status: EvaluatorDecisionStatus): string {
+  if (status === "accepted") return COPY.statusAccepted;
+  if (status === "amended") return COPY.statusAmended;
+  if (status === "rejected") return COPY.statusRejected;
+  return COPY.status;
+}
+
 export function presentDecisionCard(
   decision: DecisionObjectV01,
-  draft: InterviewDraft
+  draft: InterviewDraft,
+  evaluatorStatus: EvaluatorDecisionStatus = DEFAULT_EVALUATOR_STATUS
 ): DecisionCardView {
   const defect =
     decision.posture === "proceed" || decision.posture === "do_not_pursue";
@@ -189,7 +201,7 @@ export function presentDecisionCard(
     title: identityTitle(draft),
     productSummary: draft.productSummary.trim(),
     meta: identityMeta(draft),
-    status: COPY.status,
+    status: statusLine(evaluatorStatus),
     postureTitle:
       decision.posture === "defer" ? "Defer" : "Proceed with conditions",
     postureSentence:
@@ -207,7 +219,10 @@ export function presentDecisionCard(
     conditions,
     why: whyBullets(decision),
     next: nextBullets(decision),
-    disclaimer: COPY.disclaimer,
+    disclaimer:
+      evaluatorStatus === "not_accepted"
+        ? COPY.disclaimer
+        : COPY.disclaimerRecorded,
     policyLabel: COPY.policyLabel,
   };
 }

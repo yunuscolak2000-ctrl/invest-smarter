@@ -32,8 +32,10 @@ English words that match an answer (for example “hypothesis” in a sentence) 
 - `compare` copy, site `option` as a condition, `not_applicable` offtake
 - Whether `25_100m` is treated as ≥ 100m (it must not be; Average already uses `25_100m` with a non-hypothesis demand)
 - Market / Financial / Strategic engines, scores, or bars
-- Evaluator accept / amend / reject
 - Persistence, export, PDF, backend
+- Named evaluator, amend reason, timestamps, or audit log
+
+Evaluator accept / amend / reject is a **client overlay** on the Decision Card. It does not change posture, confidence, or conditions. Re-run `verifyDecisionRulesV01()` the same way after recording a status; the Decision Object must be identical.
 
 ## How to verify now
 
