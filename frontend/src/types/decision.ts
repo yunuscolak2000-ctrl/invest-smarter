@@ -76,5 +76,8 @@ export type DecisionObjectV01 = {
     capex_range: string;
     evaluation_context: string;
     buyer_type: string;
+    demand_certainty: string;
+    site_control: string;
+    decision_needed: string;
   };
 };

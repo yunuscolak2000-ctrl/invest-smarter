@@ -1,6 +1,7 @@
 /**
- * Decision Prototype v0.1 — deterministic intake policy.
- * Same frozen Q1–Q9 draft → same Decision Object. No AI. No Market/Financial scores.
+ * Decision Prototype v0.1 — deterministic intake policy over Q1–Q12.
+ * Same frozen draft → same Decision Object. No AI. No Market/Financial scores.
+ * Emits only proceed_with_conditions or defer.
  *
  * Manual fixtures: ./decisionRulesV01.fixtures.ts
  */
@@ -17,31 +18,27 @@ import type {
   BuyerType,
   CapexRange,
   CountryRiskTier,
+  DecisionNeeded,
+  DemandCertainty,
   DevelopmentStage,
   EvaluationContext,
   InterviewDraft,
   LocationSpecificity,
   OpportunityType,
+  SiteControl,
 } from "../types/interview";
 
 export const RULE_VERSION = "rules.v0.1" as const;
 export const SCHEMA_VERSION = "decision_object.v0.1" as const;
-
-const MISSING_INPUTS = [
-  "demand_certainty",
-  "site_control",
-  "decision_needed",
-  "known_constraints",
-] as const;
-
-const INCOMPLETE_DRIVER =
-  "Interview is incomplete: demand certainty, site control, and decision needed were not collected.";
 
 const DEFER_VETOES = new Set([
   "VETO-CONF-THIN",
   "VETO-BUYER-MEGA",
   "VETO-CONCEPT-MEGA",
   "VETO-TRIPLE-THIN",
+  "VETO-DEMAND-MEGA",
+  "VETO-BANK-HYP",
+  "VETO-FINANCE-READ",
 ]);
 
 type FrozenIntake = {
@@ -58,10 +55,17 @@ type FrozenIntake = {
   capexRange: CapexRange;
   evaluationContext: EvaluationContext;
   buyerType: BuyerType;
+  demandCertainty: DemandCertainty;
+  siteControl: SiteControl;
+  decisionNeeded: DecisionNeeded;
 };
 
 function isCapexAtLeast100m(range: CapexRange): boolean {
   return range === "100_500m" || range === "gt_500m";
+}
+
+function isPhysicalSite(type: OpportunityType): boolean {
+  return type === "greenfield" || type === "zone";
 }
 
 function freezeIntake(draft: InterviewDraft): FrozenIntake | null {
@@ -76,7 +80,10 @@ function freezeIntake(draft: InterviewDraft): FrozenIntake | null {
     !draft.currency ||
     !draft.capexRange ||
     !draft.evaluationContext ||
-    !draft.buyerType
+    !draft.buyerType ||
+    !draft.demandCertainty ||
+    !draft.siteControl ||
+    !draft.decisionNeeded
   ) {
     return null;
   }
@@ -98,6 +105,9 @@ function freezeIntake(draft: InterviewDraft): FrozenIntake | null {
     capexRange: draft.capexRange,
     evaluationContext: draft.evaluationContext,
     buyerType: draft.buyerType,
+    demandCertainty: draft.demandCertainty,
+    siteControl: draft.siteControl,
+    decisionNeeded: draft.decisionNeeded,
   };
 }
 
@@ -107,6 +117,9 @@ function mandateTension(intake: FrozenIntake): MandateTension {
   const sectorOther = intake.sectorCode === "other";
 
   if (context === "bank_screen" && buyer === "unknown") return "severe";
+  if (context === "bank_screen" && intake.demandCertainty === "hypothesis") {
+    return "severe";
+  }
   if (context === "ipa_inbound" && type === "other" && sectorOther) return "severe";
 
   if (context === "bank_screen" && (buyer === "b2b_spot" || buyer === "b2c" || buyer === "mixed")) {
@@ -131,6 +144,14 @@ function risksFrom(intake: FrozenIntake): DecisionRisk[] {
   if (buyer === "unknown" && isCapexAtLeast100m(capex)) {
     risks.push({
       risk_id: "RISK-BUYER-MEGA",
+      probability: "high",
+      impact: "critical",
+      status: "open",
+    });
+  }
+  if (intake.demandCertainty === "hypothesis" && isCapexAtLeast100m(capex)) {
+    risks.push({
+      risk_id: "RISK-DEMAND-SCALE",
       probability: "high",
       impact: "critical",
       status: "open",
@@ -180,12 +201,9 @@ function risksFrom(intake: FrozenIntake): DecisionRisk[] {
       status: "open",
     });
   }
-  if (
-    intake.locationSpecificity === "country_only" &&
-    (type === "greenfield" || type === "zone")
-  ) {
+  if (intake.siteControl === "searching" && isPhysicalSite(type)) {
     risks.push({
-      risk_id: "RISK-SITE-UNSPECIFIC",
+      risk_id: "RISK-SITE-GREENFIELD",
       probability: "high",
       impact: "high",
       status: "open",
@@ -197,9 +215,7 @@ function risksFrom(intake: FrozenIntake): DecisionRisk[] {
 
 function confidenceFrom(intake: FrozenIntake): DecisionObjectV01["confidence"] {
   const restricted = intake.countryRiskTier === "restricted";
-  const penalties: DecisionPenalty[] = [
-    { code: "Q10_Q12_NOT_COLLECTED", delta: -20 },
-  ];
+  const penalties: DecisionPenalty[] = [];
   const userDrivers: { delta: number; text: string }[] = [];
 
   if (intake.capexRange === "not_sure") {
@@ -210,9 +226,17 @@ function confidenceFrom(intake: FrozenIntake): DecisionObjectV01["confidence"] {
     penalties.push({ code: "BUYER_UNKNOWN", delta: -15 });
     userDrivers.push({ delta: -15, text: "Buyer type is undefined." });
   }
+  if (intake.demandCertainty === "hypothesis") {
+    penalties.push({ code: "DEMAND_HYPOTHESIS", delta: -15 });
+    userDrivers.push({ delta: -15, text: "Demand is a hypothesis." });
+  }
   if (intake.locationSpecificity === "country_only") {
     penalties.push({ code: "COUNTRY_ONLY", delta: -10 });
     userDrivers.push({ delta: -10, text: "Location is country-only." });
+  }
+  if (intake.siteControl === "searching") {
+    penalties.push({ code: "SITE_SEARCHING", delta: -10 });
+    userDrivers.push({ delta: -10, text: "Site is not selected." });
   }
   if (intake.sectorCode === "other") {
     penalties.push({ code: "SECTOR_OTHER", delta: -8 });
@@ -224,6 +248,9 @@ function confidenceFrom(intake: FrozenIntake): DecisionObjectV01["confidence"] {
   if (intake.capexRange === "not_sure" && intake.buyerType === "unknown") {
     value = Math.min(value, 40);
   }
+  if (intake.demandCertainty === "hypothesis" && isCapexAtLeast100m(intake.capexRange)) {
+    value = Math.min(value, 45);
+  }
   if (restricted) {
     value = Math.min(value, 70);
   }
@@ -232,17 +259,20 @@ function confidenceFrom(intake: FrozenIntake): DecisionObjectV01["confidence"] {
   const restrictedCapBinds = restricted && uncapped > 70;
   userDrivers.sort((a, b) => a.delta - b.delta);
 
+  const qualityNote = "Confidence is evidence quality, not attractiveness.";
+  const noSoft = "Collected answers contain no soft unknowns.";
+
   let drivers: [string, string];
   if (userDrivers.length >= 2) {
     drivers = [userDrivers[0].text, userDrivers[1].text];
   } else if (userDrivers.length === 1 && restrictedCapBinds) {
     drivers = [userDrivers[0].text, "Restricted geography caps confidence."];
   } else if (userDrivers.length === 1) {
-    drivers = [INCOMPLETE_DRIVER, userDrivers[0].text];
+    drivers = [userDrivers[0].text, qualityNote];
   } else if (restrictedCapBinds) {
-    drivers = [INCOMPLETE_DRIVER, "Restricted geography caps confidence."];
+    drivers = [noSoft, "Restricted geography caps confidence."];
   } else {
-    drivers = [INCOMPLETE_DRIVER, "Collected answers contain no soft unknowns."];
+    drivers = [noSoft, qualityNote];
   }
 
   const band = value >= 70 ? "high" : value >= 45 ? "medium" : "low";
@@ -250,8 +280,14 @@ function confidenceFrom(intake: FrozenIntake): DecisionObjectV01["confidence"] {
 }
 
 function conditionsFrom(intake: FrozenIntake): ConditionId[] {
-  const ids: ConditionId[] = ["COND-OFFTAKE"];
-  if (intake.opportunityType === "greenfield" || intake.opportunityType === "zone") {
+  const ids: ConditionId[] = [];
+  const offtake =
+    intake.demandCertainty === "hypothesis" ||
+    intake.demandCertainty === "advanced" ||
+    intake.buyerType === "unknown";
+
+  if (offtake) ids.push("COND-OFFTAKE");
+  if (isPhysicalSite(intake.opportunityType) && intake.siteControl === "searching") {
     ids.push("COND-SITE");
   }
   if (intake.capexRange === "not_sure") ids.push("COND-SCALE");
@@ -259,19 +295,8 @@ function conditionsFrom(intake: FrozenIntake): ConditionId[] {
   return ids.slice(0, 5);
 }
 
-function vetoesFrom(
-  intake: FrozenIntake,
-  confidence: number,
-  risks: DecisionRisk[]
-): string[] {
-  const veto_ids: string[] = ["VETO-INTAKE-INCOMPLETE"];
-  if (risks.some((risk) => risk.impact === "critical")) {
-    veto_ids.push("VETO-CRITICAL");
-  }
-  if (confidence < 50) veto_ids.push("VETO-CONF-PROCEED");
-  if (intake.evaluationContext === "bank_screen" && intake.buyerType === "unknown") {
-    veto_ids.push("VETO-BANK-UNKNOWN");
-  }
+function vetoesFrom(intake: FrozenIntake, confidence: number): string[] {
+  const veto_ids: string[] = [];
   if (confidence < 40) veto_ids.push("VETO-CONF-THIN");
   if (intake.buyerType === "unknown" && isCapexAtLeast100m(intake.capexRange)) {
     veto_ids.push("VETO-BUYER-MEGA");
@@ -286,11 +311,27 @@ function vetoesFrom(
   ) {
     veto_ids.push("VETO-TRIPLE-THIN");
   }
+  if (intake.demandCertainty === "hypothesis" && isCapexAtLeast100m(intake.capexRange)) {
+    veto_ids.push("VETO-DEMAND-MEGA");
+  }
+  if (
+    intake.evaluationContext === "bank_screen" &&
+    intake.demandCertainty === "hypothesis"
+  ) {
+    veto_ids.push("VETO-BANK-HYP");
+  }
+  if (
+    intake.decisionNeeded === "financing_read" &&
+    intake.demandCertainty !== "binding" &&
+    intake.demandCertainty !== "loi"
+  ) {
+    veto_ids.push("VETO-FINANCE-READ");
+  }
   return veto_ids;
 }
 
 /**
- * Evaluate a validated Q1–Q9 draft. Returns null if hard fields are missing
+ * Evaluate a validated Q1–Q12 draft. Returns null if hard fields are missing
  * (caller stays on Review). Emits only proceed_with_conditions or defer.
  */
 export function evaluateDecisionV01(
@@ -302,7 +343,7 @@ export function evaluateDecisionV01(
   const confidence = confidenceFrom(intake);
   const condition_ids = conditionsFrom(intake);
   const risks = risksFrom(intake);
-  const veto_ids = vetoesFrom(intake, confidence.value, risks);
+  const veto_ids = vetoesFrom(intake, confidence.value);
   const posture = veto_ids.some((id) => DEFER_VETOES.has(id))
     ? "defer"
     : "proceed_with_conditions";
@@ -317,7 +358,7 @@ export function evaluateDecisionV01(
     condition_ids,
     mandate_tension: mandateTension(intake),
     risks,
-    missing_inputs: [...MISSING_INPUTS],
+    missing_inputs: ["known_constraints"],
     export_blocked: intake.countryRiskTier === "restricted",
     fired_rule_ids: [...veto_ids, ...condition_ids],
     sources: [
@@ -341,6 +382,9 @@ export function evaluateDecisionV01(
       capex_range: intake.capexRange,
       evaluation_context: intake.evaluationContext,
       buyer_type: intake.buyerType,
+      demand_certainty: intake.demandCertainty,
+      site_control: intake.siteControl,
+      decision_needed: intake.decisionNeeded,
     },
   };
 }

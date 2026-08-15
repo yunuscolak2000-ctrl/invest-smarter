@@ -522,8 +522,6 @@ export const WIZARD_COPY = {
       "This is an intake screen, not a feasibility study, not investment advice, not a bankable model, and not legal or technical due diligence. Rules produced this recommendation. A named person has not accepted it.",
     defect:
       "Recommendation could not be produced. Return to Review.",
-    incompleteWhy:
-      "Demand certainty, site control, and the decision needed were not collected. Unconditional proceed is not available on this interview.",
     nextCommission:
       "Do not commission a feasibility study on this recommendation.",
   },

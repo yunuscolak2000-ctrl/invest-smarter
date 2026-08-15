@@ -1,11 +1,11 @@
 /**
- * Deterministic Q1–Q9 fixtures for Decision Prototype v0.1.
+ * Deterministic Q1–Q12 fixtures for Decision Prototype v0.1.
  * Not used by the UI. Call evaluateDecisionV01(draft) in a console to verify.
  *
  * Expected:
- *   strong  → proceed_with_conditions, confidence 80, COND-OFFTAKE
- *   average → proceed_with_conditions, confidence 80, COND-OFFTAKE + COND-SITE
- *   weak    → defer, confidence 22, offtake + site + scale + geo
+ *   strong  → proceed_with_conditions, high ~100, no offtake/site, never proceed
+ *   average → proceed_with_conditions, high 90, COND-OFFTAKE + COND-SITE
+ *   weak    → defer, low ~17, offtake + site + scale + geo
  */
 
 import type { InterviewDraft } from "../types/interview";
@@ -25,9 +25,9 @@ export const FIXTURE_STRONG: InterviewDraft = {
   capexRange: "5_25m",
   evaluationContext: "ipa_inbound",
   buyerType: "b2b_contract",
-  demandCertainty: null,
-  siteControl: null,
-  decisionNeeded: null,
+  demandCertainty: "binding",
+  siteControl: "secured",
+  decisionNeeded: "mandate_screen",
 };
 
 export const FIXTURE_AVERAGE: InterviewDraft = {
@@ -45,9 +45,9 @@ export const FIXTURE_AVERAGE: InterviewDraft = {
   capexRange: "25_100m",
   evaluationContext: "ipa_inbound",
   buyerType: "mixed",
-  demandCertainty: null,
-  siteControl: null,
-  decisionNeeded: null,
+  demandCertainty: "advanced",
+  siteControl: "searching",
+  decisionNeeded: "mandate_screen",
 };
 
 export const FIXTURE_WEAK: InterviewDraft = {
@@ -65,7 +65,7 @@ export const FIXTURE_WEAK: InterviewDraft = {
   capexRange: "not_sure",
   evaluationContext: "bank_screen",
   buyerType: "unknown",
-  demandCertainty: null,
-  siteControl: null,
-  decisionNeeded: null,
+  demandCertainty: "hypothesis",
+  siteControl: "searching",
+  decisionNeeded: "financing_read",
 };

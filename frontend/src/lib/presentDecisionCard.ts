@@ -24,20 +24,23 @@ export type DecisionCardView = {
 
 const COPY = WIZARD_COPY.decision;
 
-function offtakeSentence(buyerUnknown: boolean): string {
-  if (buyerUnknown) {
+function offtakeSentence(decision: DecisionObjectV01): string {
+  if (decision.inputs.buyer_type === "unknown") {
     return "Define who buys the output, then evidence that demand.";
   }
-  return "Evidence demand: a named buyer path is not enough. Record whether demand is contracted, on paper, in discussion, or still a hypothesis.";
+  if (decision.inputs.demand_certainty === "hypothesis") {
+    return "Demand is still a hypothesis. Evidence a named buyer path before treating revenue as real.";
+  }
+  return "Demand is in discussion, not on paper. Convert that into a letter or contract before treating offtake as evidenced.";
 }
 
 function conditionSentence(
   id: DecisionObjectV01["condition_ids"][number],
-  buyerUnknown: boolean
+  decision: DecisionObjectV01
 ): string | null {
-  if (id === "COND-OFFTAKE") return offtakeSentence(buyerUnknown);
+  if (id === "COND-OFFTAKE") return offtakeSentence(decision);
   if (id === "COND-SITE") {
-    return "For this greenfield or zone project, site control is unspecified. Record whether the site is secured, under option, or still being searched.";
+    return "The site is still being searched. Secure control before treating this as a build-ready file.";
   }
   if (id === "COND-SCALE") {
     return "Bound the capital requirement to a range. “Not sure” is not a scale.";
@@ -55,10 +58,13 @@ function whyBullets(decision: DecisionObjectV01): string[] {
     "VETO-BUYER-MEGA",
     "VETO-CONCEPT-MEGA",
     "VETO-TRIPLE-THIN",
+    "VETO-DEMAND-MEGA",
+    "VETO-BANK-HYP",
+    "VETO-FINANCE-READ",
   ];
   const noDefer = !deferVetoes.some((id) => vetoes.has(id));
 
-  const bullets: string[] = [COPY.incompleteWhy];
+  const bullets: string[] = [];
 
   if (decision.posture === "proceed_with_conditions" && noDefer) {
     bullets.push(
@@ -78,13 +84,34 @@ function whyBullets(decision: DecisionObjectV01): string[] {
       "Concept, unspecified location, and an open commercial or scale hole. The file is too thin to decide."
     );
   }
+  if (vetoes.has("VETO-DEMAND-MEGA")) {
+    bullets.push(
+      "Demand is a hypothesis at 100 million or above. That is not a study-ready file."
+    );
+  }
+  if (vetoes.has("VETO-BANK-HYP")) {
+    bullets.push(
+      "A bank early screen cannot treat hypothesized demand as credit-ready."
+    );
+  }
+  if (vetoes.has("VETO-FINANCE-READ")) {
+    bullets.push(
+      "A financing read needs demand on paper. This is not a bankable financial model."
+    );
+  }
   if (vetoes.has("VETO-CONF-THIN")) {
     bullets.push("Evidence quality is too low to recommend advancing.");
   }
-  if (vetoes.has("VETO-BANK-UNKNOWN")) {
+  if (decision.inputs.decision_needed === "compare") {
     bullets.push(
-      "A bank early screen with an undefined buyer cannot be treated as a clean mandate fit."
+      "This is an absolute posture for this file. Ranking it against other options is out of scope of this screen."
     );
+  }
+  if (
+    decision.inputs.decision_needed === "financing_read" &&
+    !vetoes.has("VETO-FINANCE-READ")
+  ) {
+    bullets.push("This is not a bankable financial model.");
   }
   if (decision.export_blocked) {
     bullets.push(
@@ -104,17 +131,20 @@ function nextBullets(decision: DecisionObjectV01): string[] {
   const next = [COPY.nextCommission];
 
   if (decision.posture === "proceed_with_conditions") {
-    next.push(
-      "Complete the remaining interview: demand certainty, site control, and what decision is needed."
-    );
-    next.push(
-      "If the conditions are not acceptable, stop. Do not “proceed with caution.”"
-    );
+    if (decision.condition_ids.length > 0) {
+      next.push(
+        "If the conditions are not acceptable, stop. Do not “proceed with caution.”"
+      );
+    } else {
+      next.push(
+        "A named person still has to accept this recommendation. This screen does not issue an unconditional proceed."
+      );
+    }
   }
 
   if (decision.posture === "defer") {
     next.push(
-      "Collect the missing facts named in Conditions. Re-run only after those answers exist."
+      "Close the gaps named in Conditions. Re-run only after those answers exist."
     );
     next.push(
       "Do not staff a file, open a credit workbench, or draft an IPA promotion response as if a decision had been taken."
@@ -144,10 +174,15 @@ export function presentDecisionCard(
         ? "Medium"
         : "Low";
 
-  const buyerUnknown = draft.buyerType === "unknown";
   const conditions = decision.condition_ids
-    .map((id) => conditionSentence(id, buyerUnknown))
+    .map((id) => conditionSentence(id, decision))
     .filter((sentence): sentence is string => Boolean(sentence));
+
+  if (conditions.length === 0) {
+    conditions.push(
+      "This intake policy does not issue an unconditional proceed. Treat the recommendation as conditional even when no further facts are listed here."
+    );
+  }
 
   return {
     defect,
