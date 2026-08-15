@@ -6,6 +6,7 @@ import {
   EVALUATION_CONTEXT_OPTIONS,
   LOCATION_SPECIFICITY_OPTIONS,
   OPPORTUNITY_TYPE_OPTIONS,
+  SECTOR_TAXONOMY,
 } from "../mocks/interview";
 import type {
   CapexRange,
@@ -139,6 +140,21 @@ export function reviewGroups(draft: InterviewDraft): ReviewGroup[] {
       ],
     },
   ];
+}
+
+export function identitySectorLabel(draft: InterviewDraft): string {
+  if (draft.sectorCode === "other") return "Other";
+  if (draft.sectorLabel?.trim()) return draft.sectorLabel.trim();
+  return (
+    SECTOR_TAXONOMY.find((sector) => sector.code === draft.sectorCode)?.label ??
+    "Other"
+  );
+}
+
+export function identityTitle(draft: InterviewDraft): string {
+  const country = getCountry(draft.countryCode);
+  const sector = identitySectorLabel(draft);
+  return country ? `${sector} — ${country.name}` : sector;
 }
 
 export function identityMeta(draft: InterviewDraft): string {

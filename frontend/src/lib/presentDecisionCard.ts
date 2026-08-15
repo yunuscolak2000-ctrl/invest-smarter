@@ -1,8 +1,7 @@
-import { getCountry } from "../mocks/countries";
 import { WIZARD_COPY } from "../mocks/interview";
 import type { DecisionObjectV01 } from "../types/decision";
 import type { InterviewDraft } from "../types/interview";
-import { identityMeta, sectorDisplayName } from "./interviewLabels";
+import { identityMeta, identityTitle } from "./interviewLabels";
 
 export type DecisionCardView = {
   defect: boolean;
@@ -135,12 +134,8 @@ export function presentDecisionCard(
   decision: DecisionObjectV01,
   draft: InterviewDraft
 ): DecisionCardView {
-  const country = getCountry(draft.countryCode);
   const defect =
     decision.posture === "proceed" || decision.posture === "do_not_pursue";
-
-  const statusParts = [COPY.status];
-  if (decision.export_blocked) statusParts.push(COPY.publicationHeld);
 
   const bandLabel =
     decision.confidence.band === "high"
@@ -156,12 +151,10 @@ export function presentDecisionCard(
 
   return {
     defect,
-    title: country
-      ? `${sectorDisplayName(draft)} — ${country.name}`
-      : sectorDisplayName(draft),
+    title: identityTitle(draft),
     productSummary: draft.productSummary.trim(),
     meta: identityMeta(draft),
-    status: statusParts.join(" · "),
+    status: COPY.status,
     postureTitle:
       decision.posture === "defer" ? "Defer" : "Proceed with conditions",
     postureSentence:

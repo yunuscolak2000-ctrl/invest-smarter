@@ -36,14 +36,16 @@ export function DecisionCardScreen({ view }: DecisionCardScreenProps) {
   }
 
   return (
-    <article className="space-y-10">
-      <header className="space-y-3">
-        <p className="text-sm font-medium text-white">{view.title}</p>
+    <article className="space-y-10 pb-40">
+      <header className="space-y-2" aria-label="Opportunity">
+        <p className="text-base font-medium leading-snug text-white">
+          {view.title}
+        </p>
         <p className="text-sm leading-relaxed text-slate-300">
           {view.productSummary}
         </p>
-        <p className="text-sm text-slate-400">{view.meta}</p>
-        <p className="text-xs leading-relaxed text-slate-500">{view.status}</p>
+        <p className="text-sm leading-relaxed text-slate-400">{view.meta}</p>
+        <p className="text-sm leading-relaxed text-slate-500">{view.status}</p>
       </header>
 
       <section className="space-y-3" aria-label="Decision">
