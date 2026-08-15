@@ -88,8 +88,32 @@ export function validateBuyerType(draft: InterviewDraft): string | null {
   return draft.buyerType ? null : VALIDATION_COPY.selectOption;
 }
 
+export function validateDemandCertainty(draft: InterviewDraft): string | null {
+  return draft.demandCertainty ? null : VALIDATION_COPY.selectOption;
+}
+
+export function validateSiteControl(draft: InterviewDraft): string | null {
+  return draft.siteControl ? null : VALIDATION_COPY.selectOption;
+}
+
+export function validateDecisionNeeded(draft: InterviewDraft): string | null {
+  return draft.decisionNeeded ? null : VALIDATION_COPY.selectOption;
+}
+
 const DRAFT_CHECKS: {
-  step: "q1" | "q2" | "q3" | "q4" | "q5" | "q6" | "q7" | "q8" | "q9";
+  step:
+    | "q1"
+    | "q2"
+    | "q3"
+    | "q4"
+    | "q5"
+    | "q6"
+    | "q7"
+    | "q8"
+    | "q9"
+    | "q10"
+    | "q11"
+    | "q12";
   validate: (draft: InterviewDraft) => string | null;
 }[] = [
   { step: "q1", validate: validateOpportunityType },
@@ -101,6 +125,9 @@ const DRAFT_CHECKS: {
   { step: "q7", validate: validateCapitalScale },
   { step: "q8", validate: validateEvaluationContext },
   { step: "q9", validate: validateBuyerType },
+  { step: "q10", validate: validateDemandCertainty },
+  { step: "q11", validate: validateSiteControl },
+  { step: "q12", validate: validateDecisionNeeded },
 ];
 
 export function validateInterviewDraft(

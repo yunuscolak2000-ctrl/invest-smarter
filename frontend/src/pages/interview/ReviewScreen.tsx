@@ -63,9 +63,6 @@ export function ReviewScreen({ draft, error, onEdit }: ReviewScreenProps) {
           Confidence preview · {preview.band}
         </h3>
         <p className="text-sm leading-relaxed text-slate-300">{preview.message}</p>
-        <p className="text-sm leading-relaxed text-slate-400">
-          {WIZARD_COPY.review.incompleteNote}
-        </p>
         {restricted ? (
           <p className="text-sm leading-relaxed text-slate-400">
             This geography requires review before any recommendation is published.

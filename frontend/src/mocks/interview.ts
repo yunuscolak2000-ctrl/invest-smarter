@@ -1,12 +1,15 @@
 import type {
   BuyerType,
   CapexRange,
+  DecisionNeeded,
+  DemandCertainty,
   DevelopmentStage,
   EvaluationContext,
   LocationSpecificity,
   OpportunityType,
   SectorOption,
   SelectOption,
+  SiteControl,
 } from "../types/interview";
 
 export const OPPORTUNITY_TYPE_OPTIONS: SelectOption<OpportunityType>[] = [
@@ -290,6 +293,85 @@ export const BUYER_TYPE_OPTIONS: SelectOption<BuyerType>[] = [
   { value: "unknown", label: "Not defined yet" },
 ];
 
+export const DEMAND_CERTAINTY_OPTIONS: SelectOption<DemandCertainty>[] = [
+  {
+    value: "binding",
+    label: "Binding contract or PPA",
+    helper: "Signed, enforceable",
+  },
+  {
+    value: "loi",
+    label: "LOI / term sheet / MOU",
+    helper: "Non-binding but named counterparties",
+  },
+  {
+    value: "advanced",
+    label: "Advanced discussions",
+    helper: "Named buyers, no paper",
+  },
+  {
+    value: "hypothesis",
+    label: "Demand hypothesis only",
+    helper: "No named buyer",
+  },
+  {
+    value: "not_applicable",
+    label: "Not applicable",
+    helper: "Merchant or retail with no offtake",
+  },
+];
+
+export const SITE_CONTROL_OPTIONS: SelectOption<SiteControl>[] = [
+  {
+    value: "secured",
+    label: "Site secured or owned",
+    helper: "Control is in place",
+  },
+  {
+    value: "option",
+    label: "Option or exclusive right",
+    helper: "Not fully secured",
+  },
+  {
+    value: "searching",
+    label: "Still searching / not selected",
+    helper: "Location is open",
+  },
+  {
+    value: "not_needed",
+    label: "Site not required",
+    helper: "Digital, mobile, or asset-light",
+  },
+];
+
+export const DECISION_NEEDED_OPTIONS: SelectOption<DecisionNeeded>[] = [
+  {
+    value: "go_nogo",
+    label: "Go / no-go",
+    helper: "Whether to spend further time",
+  },
+  {
+    value: "client_response",
+    label: "Client or inbound response",
+    helper: "What to tell them now",
+  },
+  {
+    value: "mandate_screen",
+    label: "Screen before committing a team",
+    helper: "Whether to staff a study",
+  },
+  {
+    value: "compare",
+    label: "Compare options",
+    helper: "Absolute posture; ranking is out of scope",
+  },
+  {
+    value: "financing_read",
+    label: "Financing readiness",
+    helper: "Not a bankable model",
+  },
+];
+
 export const DEVELOPMENT_STAGE_OPTIONS: SelectOption<DevelopmentStage>[] = [
   {
     value: "concept",
@@ -396,12 +478,35 @@ export const WIZARD_COPY = {
     unknownConfirm:
       "Buyer type recorded as undefined. Demand path will be scored as incomplete.",
   },
+  q10: {
+    title: "Demand certainty",
+    message:
+      "How firm is demand today? This fact can change proceed versus defer.",
+    hypothesisConfirm:
+      "Demand recorded as a hypothesis. Unconditional proceed will not be available on this basis.",
+    buyerUndefinedWarning:
+      "Buyer type is still undefined. Continue, or go back.",
+  },
+  q11: {
+    title: "Site / location control",
+    message:
+      "Do you control a site, or is location still open? Uncontrolled sites are a common cause of delay on greenfield files.",
+    assetLightMessage:
+      "Where will this operate from? Site not required is acceptable for a digital or mobile service.",
+    searchingConfirm:
+      "Site recorded as not selected. For a greenfield or zone file this will usually become a condition.",
+  },
+  q12: {
+    title: "Decision needed",
+    message:
+      "What decision should this assessment support? I will frame the recommendation around that question, not a generic report.",
+    stallHelper:
+      "If you need a first yes or no, choose Go / no-go. If you are deciding whether to staff work, choose Screen before committing a team.",
+  },
   review: {
     title: "Review your answers",
     message:
       "Confirm these facts before I recommend. You can open any row to change it. I will not invent missing answers.",
-    incompleteNote:
-      "Demand certainty, site control, and the decision needed are not in this interview yet.",
     incompleteError:
       "Some answers are incomplete. Open a row to fix them.",
     nextLabel: "See recommendation",
@@ -409,7 +514,7 @@ export const WIZARD_COPY = {
   decision: {
     editLabel: "Edit answers",
     policyLabel: "Intake policy v0.1",
-    status: "Intake screen · 9 of 12 questions · Recommendation, not accepted",
+    status: "Intake screen · 12 of 12 questions · Recommendation, not accepted",
     publicationHeld: "Publication held for review",
     confidenceSuffix: "evidence quality",
     bankDisclaimer: "This is not a credit approval.",
@@ -434,4 +539,7 @@ export const MINUTES_LEFT_BY_STEP = {
   q7: 3,
   q8: 2,
   q9: 2,
+  q10: 2,
+  q11: 1,
+  q12: 1,
 } as const;

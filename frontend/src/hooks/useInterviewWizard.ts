@@ -4,6 +4,8 @@ import {
   validateBuyerType,
   validateCapitalScale,
   validateCountry,
+  validateDecisionNeeded,
+  validateDemandCertainty,
   validateDevelopmentStage,
   validateEvaluationContext,
   validateInterviewDraft,
@@ -11,6 +13,7 @@ import {
   validateOpportunityType,
   validateProduct,
   validateSector,
+  validateSiteControl,
 } from "../lib/interviewValidation";
 import { evaluateDecisionV01 } from "../lib/decisionRulesV01";
 import { getCountry } from "../mocks/countries";
@@ -22,12 +25,15 @@ import {
   type BuyerType,
   type CapexRange,
   type CountryOption,
+  type DecisionNeeded,
+  type DemandCertainty,
   type DevelopmentStage,
   type EvaluationContext,
   type InterviewDraft,
   type LocationSpecificity,
   type OpportunityType,
   type SectorOption,
+  type SiteControl,
   type WizardStepId,
 } from "../types/interview";
 
@@ -42,10 +48,22 @@ const STEP_SEQUENCE: WizardStepId[] = [
   "q7",
   "q8",
   "q9",
+  "q10",
+  "q11",
+  "q12",
   "review",
 ];
 
-const CARD_STEPS: WizardStepId[] = ["q1", "q6", "q7", "q8", "q9"];
+const CARD_STEPS: WizardStepId[] = [
+  "q1",
+  "q6",
+  "q7",
+  "q8",
+  "q9",
+  "q10",
+  "q11",
+  "q12",
+];
 
 function workingTitleFrom(draft: InterviewDraft): string {
   const country = getCountry(draft.countryCode);
@@ -91,6 +109,9 @@ export function useInterviewWizard() {
     if (current === "q7") return validateCapitalScale(snapshot);
     if (current === "q8") return validateEvaluationContext(snapshot);
     if (current === "q9") return validateBuyerType(snapshot);
+    if (current === "q10") return validateDemandCertainty(snapshot);
+    if (current === "q11") return validateSiteControl(snapshot);
+    if (current === "q12") return validateDecisionNeeded(snapshot);
     return null;
   }
 
@@ -240,6 +261,18 @@ export function useInterviewWizard() {
     patchDraft({ buyerType: value });
   }
 
+  function setDemandCertainty(value: DemandCertainty) {
+    patchDraft({ demandCertainty: value });
+  }
+
+  function setSiteControl(value: SiteControl) {
+    patchDraft({ siteControl: value });
+  }
+
+  function setDecisionNeeded(value: DecisionNeeded) {
+    patchDraft({ decisionNeeded: value });
+  }
+
   const isQuestionStep = step.startsWith("q");
   const question = isQuestionStep
     ? {
@@ -282,5 +315,8 @@ export function useInterviewWizard() {
     setCapexRange,
     setEvaluationContext,
     setBuyerType,
+    setDemandCertainty,
+    setSiteControl,
+    setDecisionNeeded,
   };
 }

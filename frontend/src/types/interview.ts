@@ -24,6 +24,9 @@ export type WizardStepId =
   | "q7"
   | "q8"
   | "q9"
+  | "q10"
+  | "q11"
+  | "q12"
   | "review"
   | "decision";
 
@@ -87,6 +90,22 @@ export type BuyerType =
   | "mixed"
   | "unknown";
 
+export type DemandCertainty =
+  | "binding"
+  | "loi"
+  | "advanced"
+  | "hypothesis"
+  | "not_applicable";
+
+export type SiteControl = "secured" | "option" | "searching" | "not_needed";
+
+export type DecisionNeeded =
+  | "go_nogo"
+  | "client_response"
+  | "mandate_screen"
+  | "compare"
+  | "financing_read";
+
 export type CountryRiskTier = "standard" | "restricted";
 
 export type CountryOption = {
@@ -111,6 +130,9 @@ export type InterviewDraft = {
   capexRange: CapexRange | null;
   evaluationContext: EvaluationContext | null;
   buyerType: BuyerType | null;
+  demandCertainty: DemandCertainty | null;
+  siteControl: SiteControl | null;
+  decisionNeeded: DecisionNeeded | null;
 };
 
 export const EMPTY_INTERVIEW_DRAFT: InterviewDraft = {
@@ -128,6 +150,9 @@ export const EMPTY_INTERVIEW_DRAFT: InterviewDraft = {
   capexRange: null,
   evaluationContext: null,
   buyerType: null,
+  demandCertainty: null,
+  siteControl: null,
+  decisionNeeded: null,
 };
 
 export const WIZARD_QUESTION_TOTAL = 12;

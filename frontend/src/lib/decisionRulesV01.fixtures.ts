@@ -25,6 +25,9 @@ export const FIXTURE_STRONG: InterviewDraft = {
   capexRange: "5_25m",
   evaluationContext: "ipa_inbound",
   buyerType: "b2b_contract",
+  demandCertainty: null,
+  siteControl: null,
+  decisionNeeded: null,
 };
 
 export const FIXTURE_AVERAGE: InterviewDraft = {
@@ -42,6 +45,9 @@ export const FIXTURE_AVERAGE: InterviewDraft = {
   capexRange: "25_100m",
   evaluationContext: "ipa_inbound",
   buyerType: "mixed",
+  demandCertainty: null,
+  siteControl: null,
+  decisionNeeded: null,
 };
 
 export const FIXTURE_WEAK: InterviewDraft = {
@@ -59,4 +65,7 @@ export const FIXTURE_WEAK: InterviewDraft = {
   capexRange: "not_sure",
   evaluationContext: "bank_screen",
   buyerType: "unknown",
+  demandCertainty: null,
+  siteControl: null,
+  decisionNeeded: null,
 };

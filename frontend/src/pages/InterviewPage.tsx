@@ -7,6 +7,8 @@ import { isInterviewLocationState } from "../types/interview";
 import { BuyerTypeStep } from "./interview/BuyerTypeStep";
 import { CountryStep } from "./interview/CountryStep";
 import { DecisionCardScreen } from "./interview/DecisionCardScreen";
+import { DecisionNeededStep } from "./interview/DecisionNeededStep";
+import { DemandCertaintyStep } from "./interview/DemandCertaintyStep";
 import { DevelopmentStageStep } from "./interview/DevelopmentStageStep";
 import { EvaluationContextStep } from "./interview/EvaluationContextStep";
 import { FramingScreen } from "./interview/FramingScreen";
@@ -16,6 +18,7 @@ import { ProductStep } from "./interview/ProductStep";
 import { ReviewScreen } from "./interview/ReviewScreen";
 import { ScaleStep } from "./interview/ScaleStep";
 import { SectorStep } from "./interview/SectorStep";
+import { SiteControlStep } from "./interview/SiteControlStep";
 
 export default function InterviewPage() {
   const location = useLocation();
@@ -146,6 +149,35 @@ export default function InterviewPage() {
         <BuyerTypeStep
           value={wizard.draft.buyerType}
           onChange={wizard.setBuyerType}
+          error={wizard.error}
+          controlRef={wizard.fieldsetRef}
+        />
+      ) : null}
+
+      {wizard.step === "q10" ? (
+        <DemandCertaintyStep
+          value={wizard.draft.demandCertainty}
+          buyerType={wizard.draft.buyerType}
+          onChange={wizard.setDemandCertainty}
+          error={wizard.error}
+          controlRef={wizard.fieldsetRef}
+        />
+      ) : null}
+
+      {wizard.step === "q11" ? (
+        <SiteControlStep
+          value={wizard.draft.siteControl}
+          opportunityType={wizard.draft.opportunityType}
+          onChange={wizard.setSiteControl}
+          error={wizard.error}
+          controlRef={wizard.fieldsetRef}
+        />
+      ) : null}
+
+      {wizard.step === "q12" ? (
+        <DecisionNeededStep
+          value={wizard.draft.decisionNeeded}
+          onChange={wizard.setDecisionNeeded}
           error={wizard.error}
           controlRef={wizard.fieldsetRef}
         />

@@ -2,11 +2,14 @@ import { getCountry } from "../mocks/countries";
 import {
   BUYER_TYPE_OPTIONS,
   CAPEX_RANGE_BASE,
+  DECISION_NEEDED_OPTIONS,
+  DEMAND_CERTAINTY_OPTIONS,
   DEVELOPMENT_STAGE_OPTIONS,
   EVALUATION_CONTEXT_OPTIONS,
   LOCATION_SPECIFICITY_OPTIONS,
   OPPORTUNITY_TYPE_OPTIONS,
   SECTOR_TAXONOMY,
+  SITE_CONTROL_OPTIONS,
 } from "../mocks/interview";
 import type {
   CapexRange,
@@ -127,15 +130,30 @@ export function reviewGroups(draft: InterviewDraft): ReviewGroup[] {
           label: "Who is evaluating this",
           value: optionLabel(EVALUATION_CONTEXT_OPTIONS, draft.evaluationContext),
         },
+        {
+          step: "q12",
+          label: "Decision needed",
+          value: optionLabel(DECISION_NEEDED_OPTIONS, draft.decisionNeeded),
+        },
       ],
     },
     {
-      title: "Commercial",
+      title: "Commercial and site",
       rows: [
         {
           step: "q9",
           label: "Who buys the output",
           value: optionLabel(BUYER_TYPE_OPTIONS, draft.buyerType),
+        },
+        {
+          step: "q10",
+          label: "Demand certainty",
+          value: optionLabel(DEMAND_CERTAINTY_OPTIONS, draft.demandCertainty),
+        },
+        {
+          step: "q11",
+          label: "Site control",
+          value: optionLabel(SITE_CONTROL_OPTIONS, draft.siteControl),
         },
       ],
     },
@@ -178,10 +196,15 @@ export function reviewConfidencePreview(draft: InterviewDraft): {
   const open: string[] = [];
   if (draft.capexRange === "not_sure") open.push("capital scale");
   if (draft.buyerType === "unknown") open.push("buyer type");
+  if (draft.demandCertainty === "hypothesis") open.push("demand certainty");
+  if (draft.siteControl === "searching") open.push("site control");
   if (draft.locationSpecificity === "country_only") open.push("location");
   if (draft.sectorCode === "other") open.push("sector");
 
-  if (draft.capexRange === "not_sure") {
+  const thinDemandAndSite =
+    draft.demandCertainty === "hypothesis" && draft.siteControl === "searching";
+
+  if (draft.capexRange === "not_sure" || thinDemandAndSite) {
     return {
       band: "Low",
       message:
