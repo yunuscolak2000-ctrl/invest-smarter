@@ -1,15 +1,15 @@
 /**
  * Deterministic Q1–Q12 fixtures for Decision Prototype v0.1.
- * Not used by the UI. Call evaluateDecisionV01(draft) in a console to verify.
- *
- * Expected:
- *   strong  → proceed_with_conditions, high ~100, no offtake/site, never proceed
- *   average → proceed_with_conditions, high 90, COND-OFFTAKE + COND-SITE
- *   weak    → defer, low ~17, offtake + site + scale + geo
+ * Not used by the UI. Pair with ./decisionRulesV01.qa.ts.
  */
 
 import type { InterviewDraft } from "../types/interview";
 
+function fromStrong(patch: Partial<InterviewDraft>): InterviewDraft {
+  return { ...FIXTURE_STRONG, ...patch };
+}
+
+/** 1. Strong clean case — expansion / binding / secured / mandate screen */
 export const FIXTURE_STRONG: InterviewDraft = {
   opportunityType: "expansion",
   sectorCode: "energy.renewable.solar",
@@ -30,6 +30,7 @@ export const FIXTURE_STRONG: InterviewDraft = {
   decisionNeeded: "mandate_screen",
 };
 
+/** 2. Average conditions — greenfield / advanced / searching */
 export const FIXTURE_AVERAGE: InterviewDraft = {
   opportunityType: "greenfield",
   sectorCode: "energy.renewable.solar",
@@ -50,6 +51,7 @@ export const FIXTURE_AVERAGE: InterviewDraft = {
   decisionNeeded: "mandate_screen",
 };
 
+/** 3. Weak defer — stacked soft unknowns + bank screen + financing read */
 export const FIXTURE_WEAK: InterviewDraft = {
   opportunityType: "greenfield",
   sectorCode: "other",
@@ -69,3 +71,38 @@ export const FIXTURE_WEAK: InterviewDraft = {
   siteControl: "searching",
   decisionNeeded: "financing_read",
 };
+
+/**
+ * 4. Hypothesis at ≥ 100m, otherwise a clean file.
+ * Isolates VETO-DEMAND-MEGA and the 45 confidence cap.
+ */
+export const FIXTURE_HYPOTHESIS_MEGA: InterviewDraft = fromStrong({
+  capexRange: "100_500m",
+  demandCertainty: "hypothesis",
+});
+
+/**
+ * 5. Financing read without paper.
+ * Uses advanced (not hypothesis) so this veto is not mixed with bank/hypothesis rules.
+ */
+export const FIXTURE_FINANCING_READ: InterviewDraft = fromStrong({
+  demandCertainty: "advanced",
+  decisionNeeded: "financing_read",
+});
+
+/**
+ * 6. Bank screen with hypothesized demand, otherwise a clean file.
+ */
+export const FIXTURE_BANK_HYPOTHESIS: InterviewDraft = fromStrong({
+  evaluationContext: "bank_screen",
+  demandCertainty: "hypothesis",
+});
+
+/**
+ * 7. Restricted geography on an otherwise clean file.
+ * Must not defer only because the country is restricted.
+ */
+export const FIXTURE_RESTRICTED_GEO: InterviewDraft = fromStrong({
+  countryCode: "RU",
+  restrictedGeoAck: true,
+});

@@ -3,7 +3,8 @@
  * Same frozen draft → same Decision Object. No AI. No Market/Financial scores.
  * Emits only proceed_with_conditions or defer.
  *
- * Manual fixtures: ./decisionRulesV01.fixtures.ts
+ * Fixtures: ./decisionRulesV01.fixtures.ts
+ * QA helper (no test runner): ./decisionRulesV01.qa.ts
  */
 
 import { getCountry } from "../mocks/countries";
