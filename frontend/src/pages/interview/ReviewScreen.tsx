@@ -21,10 +21,15 @@ export function ReviewScreen({ draft, error, onEdit }: ReviewScreenProps) {
 
   return (
     <section className="space-y-8">
-      <AssistantPrompt
-        title={WIZARD_COPY.review.title}
-        message={WIZARD_COPY.review.message}
-      />
+      <div className="space-y-2">
+        <AssistantPrompt
+          title={WIZARD_COPY.review.title}
+          message={WIZARD_COPY.review.message}
+        />
+        <p className="text-xs leading-relaxed text-slate-600">
+          {WIZARD_COPY.review.draftPersisted}
+        </p>
+      </div>
 
       <FieldError id="review-error" message={error} />
 

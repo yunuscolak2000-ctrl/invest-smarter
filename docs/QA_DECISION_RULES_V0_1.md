@@ -33,15 +33,26 @@ English words that match an answer (for example “hypothesis” in a sentence) 
 - Whether `25_100m` is treated as ≥ 100m (it must not be; Average already uses `25_100m` with a non-hypothesis demand)
 - Market / Financial / Strategic engines, scores, or bars
 - Backend, export, PDF, login, or cloud save
-- Wizard-draft persistence (refresh mid-interview still returns to Welcome)
+- Multiple drafts, draft history, or analytics
 
-Evaluator name and reason are **client overlay** fields on the snapshot. They do not change posture, confidence, conditions, or the frozen draft. Accept, amend, and reject all require a non-blank evaluator name. Accept does not require a reason. Amend and reject require name and reason. Whitespace-only name is invalid. Changing any interview answer still clears the snapshot **and** the localStorage item. Validation errors are UI-only and do not persist.
+Evaluator name and reason are **client overlay** fields on the snapshot. They do not change posture, confidence, conditions, or the frozen draft. Accept, amend, and reject all require a non-blank evaluator name. Accept does not require a reason. Amend and reject require name and reason. Whitespace-only name is invalid. Changing any interview answer still clears the snapshot **and** the localStorage snapshot item. Validation errors are UI-only and do not persist.
 
-The current snapshot is saved in this browser under `invest-smarter.recommendationSnapshot.v0.1`. Refresh on the Decision Card restores it. Invalid JSON or an incompatible schema is discarded silently. Starting a new interview from Welcome does not resume the saved card; it starts framing and replaces the saved snapshot when a new recommendation is created (the previous save is cleared on that new start).
+The current snapshot is saved in this browser under `invest-smarter.recommendationSnapshot.v0.1`. Refresh on the Decision Card restores it. Invalid JSON or an incompatible schema is discarded silently.
+
+The in-progress interview is saved under `invest-smarter.interviewDraft.v0.1` (answers + current step). Refresh mid-wizard or on Review restores that draft. A valid snapshot always outranks a draft. Invalid draft JSON is discarded silently and must not crash the app. Starting a new interview from Welcome clears **both** the draft and the snapshot and starts Framing. “See recommendation” makes the snapshot the source of truth and clears the in-progress draft. “Clear saved recommendation” clears the snapshot only; Review then becomes the in-progress draft again. There is one draft and one snapshot — no history.
 
 ## How to verify now
 
 **A. Walk the wizard** with each draft above. Confirm posture, confidence, conditions, and that the card never shows IDs or “were not collected.”
+
+**A2. Persistence walkthrough**
+
+- Refresh on Q1–Q12 restores the same answers and step.
+- Refresh on Review restores Review with the same answers.
+- Refresh on the Decision Card restores the card (snapshot wins over any leftover draft).
+- Welcome → Start interview clears the draft and the snapshot and opens Framing.
+- Corrupt the draft key in DevTools; reload `/interview` — the app must not crash; invalid draft is discarded.
+- There is still only one draft key and one snapshot key. No history UI.
 
 **B. Call the helper** from a future test file or a throwaway console:
 

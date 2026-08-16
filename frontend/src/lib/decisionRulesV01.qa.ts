@@ -5,8 +5,9 @@
  * They must not change posture, confidence, or conditions.
  * Do not pass evaluator status into evaluateDecisionV01.
  * The card must present snapshot.frozenDraft, not a later live draft.
- * localStorage restore uses parseStoredRecommendationSnapshot; invalid
- * payloads must return null and never crash.
+ * localStorage restore uses parseStoredRecommendationSnapshot and
+ * parseStoredInterviewDraft; invalid payloads must return null and never crash.
+ * A recommendation snapshot outranks an in-progress draft on refresh.
  *
  * Later, with Vitest:
  *   import { verifyDecisionRulesV01 } from "./decisionRulesV01.qa";
@@ -14,7 +15,7 @@
  */
 
 import type { ConditionId, DecisionObjectV01 } from "../types/decision";
-import type { InterviewDraft } from "../types/interview";
+import { EMPTY_INTERVIEW_DRAFT, type InterviewDraft } from "../types/interview";
 import { evaluateDecisionV01 } from "./decisionRulesV01";
 import {
   createRecommendationSnapshot,
@@ -24,6 +25,10 @@ import {
   parseStoredRecommendationSnapshot,
   serializeRecommendationSnapshot,
 } from "./recommendationSnapshotStorage";
+import {
+  parseStoredInterviewDraft,
+  serializeInterviewDraft,
+} from "./interviewDraftStorage";
 import {
   FIXTURE_AVERAGE,
   FIXTURE_BANK_HYPOTHESIS,
@@ -548,12 +553,72 @@ function persistenceChecks(): QaCheck[] {
   ];
 }
 
+function draftPersistenceChecks(): QaCheck[] {
+  const partial = {
+    ...EMPTY_INTERVIEW_DRAFT,
+    opportunityType: "greenfield" as const,
+    productSummary: "Solar park",
+  };
+  const record = {
+    draft: partial,
+    step: "q3" as const,
+    createdAt: "2026-08-16T10:00:00.000Z",
+    updatedAt: "2026-08-16T10:05:00.000Z",
+  };
+  const restored = parseStoredInterviewDraft(serializeInterviewDraft(record));
+
+  return [
+    check(
+      "draft-persistence",
+      restored !== null &&
+        restored.step === "q3" &&
+        restored.draft.productSummary === "Solar park" &&
+        restored.draft.opportunityType === "greenfield" &&
+        restored.draft.countryCode === null,
+      "refresh must restore a partial in-progress draft and current step"
+    ),
+    check(
+      "draft-persistence",
+      parseStoredInterviewDraft("not-json") === null,
+      "invalid draft JSON must not restore"
+    ),
+    check(
+      "draft-persistence",
+      parseStoredInterviewDraft(
+        JSON.stringify({ schema: "other.v0", record })
+      ) === null,
+      "incompatible draft schema must not restore"
+    ),
+    check(
+      "draft-persistence",
+      parseStoredInterviewDraft(
+        JSON.stringify({
+          schema: "invest-smarter.interviewDraft.v0.1",
+          record: { ...record, step: "decision" },
+        })
+      ) === null,
+      "a decision-step draft must not restore; snapshot owns that screen"
+    ),
+    check(
+      "draft-persistence",
+      parseStoredInterviewDraft(
+        JSON.stringify({
+          schema: "invest-smarter.interviewDraft.v0.1",
+          record: { ...record, draft: { productSummary: "broken" } },
+        })
+      ) === null,
+      "structurally invalid draft payload must not restore"
+    ),
+  ];
+}
+
 export function verifyDecisionRulesV01(): QaReport {
   const checks = [
     ...CASES.flatMap(runCase),
     ...evaluatorOverlayChecks(),
     ...snapshotChecks(),
     ...persistenceChecks(),
+    ...draftPersistenceChecks(),
   ];
   const failed = checks.filter((item) => !item.ok).length;
   return {

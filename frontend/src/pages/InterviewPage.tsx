@@ -26,7 +26,7 @@ export default function InterviewPage() {
   const fromWelcome = isInterviewLocationState(location.state);
   const wizard = useInterviewWizard({ resumeSaved: !fromWelcome });
 
-  if (!fromWelcome && !wizard.hasSnapshot) {
+  if (!fromWelcome && !wizard.hasSnapshot && !wizard.hasResumableDraft) {
     return <Navigate to="/" replace />;
   }
 

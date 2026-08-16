@@ -510,6 +510,7 @@ export const WIZARD_COPY = {
     incompleteError:
       "Some answers are incomplete. Open a row to fix them.",
     nextLabel: "See recommendation",
+    draftPersisted: "Draft saved in this browser for this demo.",
   },
   decision: {
     editLabel: "Edit answers",
