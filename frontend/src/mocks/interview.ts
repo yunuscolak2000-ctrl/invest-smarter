@@ -512,14 +512,14 @@ export const WIZARD_COPY = {
   q9: {
     title: "Who buys the output",
     message:
-      "Who is expected to buy the output? Demand path drives both market scoring and revenue logic.",
+      "Who is expected to buy the output? Demand path drives whether revenue is evidenced.",
     unknownConfirm:
       "Buyer type recorded as undefined. Demand path will be scored as incomplete.",
   },
   q10: {
     title: "Demand certainty",
     message:
-      "How firm is demand today? This fact can change proceed versus defer.",
+      "How firm is demand today? This can change proceed versus defer.",
     hypothesisConfirm:
       "Demand recorded as a hypothesis. Unconditional proceed will not be available on this basis.",
     buyerUndefinedWarning:

@@ -1,9 +1,7 @@
 import { getCountry } from "../mocks/countries";
 import {
-  BUYER_TYPE_OPTIONS,
   CAPEX_RANGE_BASE,
   DECISION_NEEDED_OPTIONS,
-  DEMAND_CERTAINTY_OPTIONS,
   DEVELOPMENT_STAGE_OPTIONS,
   EVALUATION_CONTEXT_OPTIONS,
   LOCATION_SPECIFICITY_OPTIONS,
@@ -12,6 +10,12 @@ import {
   SECTOR_TAXONOMY,
   SITE_CONTROL_OPTIONS,
 } from "../mocks/interview";
+import {
+  buyerTypeOptions,
+  demandCertaintyOptions,
+  q9Prompt,
+  q10Prompt,
+} from "./contextAwareCopy";
 import type {
   CapexRange,
   InterviewDraft,
@@ -148,13 +152,19 @@ export function reviewGroups(draft: InterviewDraft): ReviewGroup[] {
       rows: [
         {
           step: "q9",
-          label: "Who buys the output",
-          value: optionLabel(BUYER_TYPE_OPTIONS, draft.buyerType),
+          label: q9Prompt(draft.projectContext).title,
+          value: optionLabel(
+            buyerTypeOptions(draft.projectContext),
+            draft.buyerType
+          ),
         },
         {
           step: "q10",
-          label: "Demand certainty",
-          value: optionLabel(DEMAND_CERTAINTY_OPTIONS, draft.demandCertainty),
+          label: q10Prompt(draft.projectContext).title,
+          value: optionLabel(
+            demandCertaintyOptions(draft.projectContext),
+            draft.demandCertainty
+          ),
         },
         {
           step: "q11",

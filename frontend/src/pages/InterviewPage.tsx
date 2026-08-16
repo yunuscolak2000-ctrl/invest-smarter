@@ -166,6 +166,7 @@ export default function InterviewPage() {
       {wizard.step === "q9" ? (
         <BuyerTypeStep
           value={wizard.draft.buyerType}
+          projectContext={wizard.draft.projectContext}
           onChange={wizard.setBuyerType}
           error={wizard.error}
           controlRef={wizard.fieldsetRef}
@@ -176,6 +177,7 @@ export default function InterviewPage() {
         <DemandCertaintyStep
           value={wizard.draft.demandCertainty}
           buyerType={wizard.draft.buyerType}
+          projectContext={wizard.draft.projectContext}
           onChange={wizard.setDemandCertainty}
           error={wizard.error}
           controlRef={wizard.fieldsetRef}

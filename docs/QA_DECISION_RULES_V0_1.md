@@ -42,7 +42,9 @@ The current snapshot is saved in this browser under `invest-smarter.recommendati
 
 The in-progress interview is saved under `invest-smarter.interviewDraft.v0.1` (answers + current step). Refresh mid-wizard or on Review restores that draft. A valid snapshot always outranks a draft. Invalid draft JSON is discarded silently and must not crash the app. Starting a new interview from Welcome clears **both** the draft and the snapshot and starts Framing. “See recommendation” makes the snapshot the source of truth and clears the in-progress draft. “Clear saved recommendation” clears the snapshot only; Review then becomes the in-progress draft again. There is one draft and one snapshot — no history.
 
-`projectContext` is setup, not Q13. Progress remains Question *n* of 12. It is required before Q1, shown on Review, and stored on the in-progress draft and the snapshot `frozenDraft`. It does **not** change `rules.v0.1` posture, confidence, or conditions in this sprint. It is not added to the Decision Object schema.
+`projectContext` is setup, not Q13. Progress remains Question *n* of 12. It is required before Q1, shown on Review, and stored on the in-progress draft and the snapshot `frozenDraft`. It does **not** change `rules.v0.1` posture, confidence, or conditions. It is not added to the Decision Object schema.
+
+Q9 and Q10 keep the same stored enums. Labels and advisor copy follow `projectContext`. `not_sure` uses the private-investment wording. Public and development-finance Decision Cards replace commercial offtake language with a public-use sentence when an offtake condition is shown. A development-finance disclaimer (“not an eligibility opinion…”) appears only for `development_finance`.
 
 ## How to verify now
 
@@ -60,6 +62,9 @@ The in-progress interview is saved under `invest-smarter.interviewDraft.v0.1` (a
 - Corrupt the draft key in DevTools; reload `/interview` — the app must not crash; invalid draft is discarded.
 - There is still only one draft key and one snapshot key. No history UI.
 - Changing Project Context does not change rules.v0.1 posture.
+- Q9/Q10 labels follow Project Context; stored values stay the same. `not_sure` matches private copy.
+- A public or development-finance card with an offtake condition shows the public-use sentence, not PPA/offtake commercial copy.
+- The grant/eligibility disclaimer appears only when Project Context is development finance.
 
 **B. Call the helper** from a future test file or a throwaway console:
 

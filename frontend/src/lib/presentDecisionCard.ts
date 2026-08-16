@@ -5,6 +5,10 @@ import {
   type EvaluatorDecisionStatus,
 } from "../types/decision";
 import type { InterviewDraft } from "../types/interview";
+import {
+  grantDisclaimer,
+  offtakeConditionSentence,
+} from "./contextAwareCopy";
 import { identityMeta, identityTitle } from "./interviewLabels";
 
 export type DecisionCardView = {
@@ -16,6 +20,7 @@ export type DecisionCardView = {
   postureTitle: string;
   postureSentence: string;
   bankDisclaimer: string | null;
+  grantDisclaimer: string | null;
   confidenceLine: string;
   confidenceDrivers: [string, string];
   conditionsIntro: string;
@@ -28,21 +33,25 @@ export type DecisionCardView = {
 
 const COPY = WIZARD_COPY.decision;
 
-function offtakeSentence(decision: DecisionObjectV01): string {
-  if (decision.inputs.buyer_type === "unknown") {
-    return "Define who buys the output, then evidence that demand.";
-  }
-  if (decision.inputs.demand_certainty === "hypothesis") {
-    return "Demand is still a hypothesis. Evidence a named buyer path before treating revenue as real.";
-  }
-  return "Demand is in discussion, not on paper. Convert that into a letter or contract before treating offtake as evidenced.";
+function offtakeSentence(
+  decision: DecisionObjectV01,
+  draft: InterviewDraft
+): string {
+  const commercial =
+    decision.inputs.buyer_type === "unknown"
+      ? "Define who buys the output, then evidence that demand."
+      : decision.inputs.demand_certainty === "hypothesis"
+        ? "Demand is still a hypothesis. Evidence a named buyer path before treating revenue as real."
+        : "Demand is in discussion, not on paper. Convert that into a letter or contract before treating offtake as evidenced.";
+  return offtakeConditionSentence(draft.projectContext, commercial);
 }
 
 function conditionSentence(
   id: DecisionObjectV01["condition_ids"][number],
-  decision: DecisionObjectV01
+  decision: DecisionObjectV01,
+  draft: InterviewDraft
 ): string | null {
-  if (id === "COND-OFFTAKE") return offtakeSentence(decision);
+  if (id === "COND-OFFTAKE") return offtakeSentence(decision, draft);
   if (id === "COND-SITE") {
     return "The site is still being searched. Secure control before treating this as a build-ready file.";
   }
@@ -187,7 +196,7 @@ export function presentDecisionCard(
         : "Low";
 
   const conditions = decision.condition_ids
-    .map((id) => conditionSentence(id, decision))
+    .map((id) => conditionSentence(id, decision, draft))
     .filter((sentence): sentence is string => Boolean(sentence));
 
   if (conditions.length === 0) {
@@ -210,6 +219,7 @@ export function presentDecisionCard(
         : "Advance only if the conditions below are accepted. This is not clearance to commission a full study.",
     bankDisclaimer:
       draft.evaluationContext === "bank_screen" ? COPY.bankDisclaimer : null,
+    grantDisclaimer: grantDisclaimer(draft.projectContext),
     confidenceLine: `${bandLabel} · ${decision.confidence.value} of 100 · ${COPY.confidenceSuffix}`,
     confidenceDrivers: decision.confidence.drivers,
     conditionsIntro:

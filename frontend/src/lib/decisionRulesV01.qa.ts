@@ -9,7 +9,8 @@
  * parseStoredInterviewDraft; invalid payloads must return null and never crash.
  * A recommendation snapshot outranks an in-progress draft on refresh.
  * projectContext is setup, not Q13. It is persisted on the draft/snapshot
- * and must not change rules.v0.1.
+ * and must not change rules.v0.1. Q9/Q10 labels follow projectContext;
+ * stored enums stay the same. not_sure uses private copy.
  *
  * Later, with Vitest:
  *   import { verifyDecisionRulesV01 } from "./decisionRulesV01.qa";
@@ -19,6 +20,14 @@
 import type { ConditionId, DecisionObjectV01 } from "../types/decision";
 import { EMPTY_INTERVIEW_DRAFT, type InterviewDraft } from "../types/interview";
 import { evaluateDecisionV01 } from "./decisionRulesV01";
+import {
+  buyerTypeOptions,
+  copyDialect,
+  demandCertaintyOptions,
+  grantDisclaimer,
+  q9Prompt,
+  q10Prompt,
+} from "./contextAwareCopy";
 import {
   createRecommendationSnapshot,
   evaluatorDecisionErrors,
@@ -184,6 +193,7 @@ function viewText(view: DecisionCardView): string {
     view.postureTitle,
     view.postureSentence,
     view.bankDisclaimer ?? "",
+    view.grantDisclaimer ?? "",
     view.confidenceLine,
     ...view.confidenceDrivers,
     view.conditionsIntro,
@@ -685,6 +695,42 @@ function projectContextChecks(): QaCheck[] {
     ? presentDecisionCard(publicDecision, publicDraft)
     : null;
 
+  const averagePublic: InterviewDraft = {
+    ...FIXTURE_AVERAGE,
+    projectContext: "public_project",
+  };
+  const averageDev: InterviewDraft = {
+    ...FIXTURE_AVERAGE,
+    projectContext: "development_finance",
+  };
+  const averageUnsure: InterviewDraft = {
+    ...FIXTURE_AVERAGE,
+    projectContext: "not_sure",
+  };
+  const averageDecision = evaluateDecisionV01(FIXTURE_AVERAGE);
+  const publicAverageView = averageDecision
+    ? presentDecisionCard(averageDecision, averagePublic)
+    : null;
+  const privateAverageView = averageDecision
+    ? presentDecisionCard(averageDecision, FIXTURE_AVERAGE)
+    : null;
+  const devAverageView = averageDecision
+    ? presentDecisionCard(averageDecision, averageDev)
+    : null;
+  const unsureAverageView = averageDecision
+    ? presentDecisionCard(averageDecision, averageUnsure)
+    : null;
+
+  const publicOfftake =
+    "Public use or payment is not evidenced. Name the user or payer, or accept that demand is still a hypothesis.";
+  const grantLine =
+    "This is not an eligibility opinion, not a grant award, and not a commitment to disburse.";
+
+  const buyerValues = buyerTypeOptions("public_project").map((option) => option.value);
+  const privateBuyerValues = buyerTypeOptions("private_investment").map(
+    (option) => option.value
+  );
+
   return [
     check(
       "project-context",
@@ -705,6 +751,68 @@ function projectContextChecks(): QaCheck[] {
       "project-context",
       publicView?.meta.startsWith("Public project ·") === true,
       "public project identity uses the Review label, not an enum"
+    ),
+    check(
+      "context-copy",
+      copyDialect("not_sure") === "private" &&
+        q9Prompt("not_sure").title === q9Prompt("private_investment").title &&
+        q10Prompt("not_sure").title === q10Prompt("private_investment").title,
+      "not_sure must use private Q9/Q10 copy"
+    ),
+    check(
+      "context-copy",
+      q9Prompt("public_project").title === "Who uses or pays" &&
+        q9Prompt("development_finance").title === "Who is the user or offtaker",
+      "public and development-finance Q9 titles must differ from private"
+    ),
+    check(
+      "context-copy",
+      JSON.stringify(buyerValues) === JSON.stringify(privateBuyerValues),
+      "Q9 stored values must be identical across contexts"
+    ),
+    check(
+      "context-copy",
+      demandCertaintyOptions("public_project")[0]?.value ===
+        demandCertaintyOptions("private_investment")[0]?.value,
+      "Q10 stored values must be identical across contexts"
+    ),
+    check(
+      "context-copy",
+      privateAverageView?.conditions.some((line) =>
+        line.includes("letter or contract")
+      ) === true,
+      "private offtake copy stays commercial"
+    ),
+    check(
+      "context-copy",
+      publicAverageView?.conditions.includes(publicOfftake) === true &&
+        publicAverageView.conditions.every(
+          (line) => !line.includes("letter or contract")
+        ) &&
+        devAverageView?.conditions.includes(publicOfftake) === true,
+      "public and development-finance COND-OFFTAKE copy must use the public-use sentence, not commercial offtake language"
+    ),
+    check(
+      "context-copy",
+      unsureAverageView?.conditions.some((line) =>
+        line.includes("letter or contract")
+      ) === true,
+      "not_sure offtake copy must match private"
+    ),
+    check(
+      "context-copy",
+      grantDisclaimer("development_finance") === grantLine &&
+        grantDisclaimer("public_project") === null &&
+        grantDisclaimer("private_investment") === null &&
+        grantDisclaimer("not_sure") === null,
+      "grant disclaimer is development_finance only"
+    ),
+    check(
+      "context-copy",
+      devAverageView?.grantDisclaimer === grantLine &&
+        publicAverageView?.grantDisclaimer === null &&
+        privateAverageView?.grantDisclaimer === null,
+      "Decision Card shows the grant disclaimer only for development finance"
     ),
   ];
 }

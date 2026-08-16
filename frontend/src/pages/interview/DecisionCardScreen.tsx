@@ -163,6 +163,11 @@ export function DecisionCardScreen({
             {view.bankDisclaimer}
           </p>
         ) : null}
+        {view.grantDisclaimer ? (
+          <p className="text-sm leading-relaxed text-slate-400">
+            {view.grantDisclaimer}
+          </p>
+        ) : null}
       </section>
 
       <section className="space-y-3" aria-label="Confidence">
