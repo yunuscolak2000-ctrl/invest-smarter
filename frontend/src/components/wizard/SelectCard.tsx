@@ -1,4 +1,5 @@
 import { forwardRef } from "react";
+import { useCopy } from "../../hooks/useLanguage";
 import type { SelectOption } from "../../types/interview";
 import { FieldError } from "./FieldError";
 
@@ -17,6 +18,7 @@ export const SelectCardGroup = forwardRef<HTMLFieldSetElement, SelectCardGroupPr
     { name, value, options, onChange, columns = 1, error, errorId = `${name}-error` },
     ref
   ) {
+    const copy = useCopy();
     return (
       <div className="space-y-3">
         <fieldset
@@ -64,7 +66,7 @@ export const SelectCardGroup = forwardRef<HTMLFieldSetElement, SelectCardGroupPr
                     ) : null}
                     {option.examples ? (
                       <span className="mt-1 block text-xs leading-relaxed text-slate-500">
-                        Examples: {option.examples}
+                        {copy.chrome.examplesPrefix}: {option.examples}
                       </span>
                     ) : null}
                   </span>

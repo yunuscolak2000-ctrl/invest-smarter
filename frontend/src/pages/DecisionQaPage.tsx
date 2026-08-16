@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { LanguageSelector } from "../components/LanguageSelector";
 import { useLanguage } from "../hooks/useLanguage";
+import { EN } from "../lib/copy/en";
 import {
   createRecommendationSnapshot,
   evaluatorDecisionErrors,
@@ -27,12 +28,10 @@ type RunState = {
   snapshot: RecommendationSnapshot;
 };
 
-function postureLabel(
-  posture: HarnessPosture,
-  proceed: string,
-  defer: string
-): string {
-  return posture === "defer" ? defer : proceed;
+function postureLabel(posture: HarnessPosture): string {
+  return posture === "defer"
+    ? EN.decision.postureDefer
+    : EN.decision.postureProceed;
 }
 
 export default function DecisionQaPage() {
@@ -137,11 +136,7 @@ export default function DecisionQaPage() {
                     {fixture.name}
                   </span>
                   <span className="mt-2 block text-xs text-slate-400">
-                    {postureLabel(
-                      fixture.expectedPosture,
-                      copy.decision.postureProceed,
-                      copy.decision.postureDefer
-                    )}
+                    {postureLabel(fixture.expectedPosture)}
                     {fixture.expectedConfidence != null
                       ? ` · ${fixture.expectedConfidence}`
                       : ""}
@@ -165,11 +160,7 @@ export default function DecisionQaPage() {
                   {qa.expectedPosture}
                 </dt>
                 <dd className="mt-1 text-slate-200">
-                  {postureLabel(
-                    run.fixture.expectedPosture,
-                    copy.decision.postureProceed,
-                    copy.decision.postureDefer
-                  )}
+                  {postureLabel(run.fixture.expectedPosture)}
                 </dd>
               </div>
               <div>
@@ -179,11 +170,7 @@ export default function DecisionQaPage() {
                 <dd className="mt-1 text-slate-200">
                   {actualPosture === "defer" ||
                   actualPosture === "proceed_with_conditions"
-                    ? postureLabel(
-                        actualPosture,
-                        copy.decision.postureProceed,
-                        copy.decision.postureDefer
-                      )
+                    ? postureLabel(actualPosture)
                     : qa.notSet}
                 </dd>
               </div>

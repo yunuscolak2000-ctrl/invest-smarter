@@ -48,6 +48,7 @@ export type UiCopy = {
     edit: string;
     selected: string;
     other: string;
+    examplesPrefix: string;
     languageGroupLabel: string;
     englishShort: string;
     turkishShort: string;
@@ -82,6 +83,7 @@ export type UiCopy = {
     message: string;
     allSectors: string;
     searchPlaceholder: string;
+    emptyMessage: string;
     describeSector: string;
     sectorOtherPlaceholder: string;
     sectorOtherHelper: string;

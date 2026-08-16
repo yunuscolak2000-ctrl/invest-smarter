@@ -49,6 +49,7 @@ export const TR: UiCopy = {
     edit: "Düzenle",
     selected: "Seçildi",
     other: "Diğer",
+    examplesPrefix: "Örnekler",
     languageGroupLabel: "Dil",
     englishShort: "EN",
     turkishShort: "TR",
@@ -91,6 +92,7 @@ export const TR: UiCopy = {
       "Bunu hangi sektörde değerlendirmeliyim? Piyasa ve düzenleme bağlamını buna göre yüklerim.",
     allSectors: "Tüm sektörler",
     searchPlaceholder: "Ada veya koda göre ara",
+    emptyMessage: "Eşleşen sektör yok",
     describeSector: "Sektörü tanımlayın",
     sectorOtherPlaceholder: "ör. Atıktan enerji",
     sectorOtherHelper:

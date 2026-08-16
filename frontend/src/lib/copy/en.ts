@@ -113,6 +113,7 @@ export const EN: UiCopy = {
     edit: "Edit",
     selected: "Selected",
     other: "Other",
+    examplesPrefix: "Examples",
     languageGroupLabel: "Language",
     englishShort: "EN",
     turkishShort: "TR",
@@ -148,6 +149,7 @@ export const EN: UiCopy = {
     message: WIZARD_COPY.q2.message,
     allSectors: "All sectors",
     searchPlaceholder: "Search by name or code",
+    emptyMessage: "No matching sectors",
     describeSector: "Describe the sector",
     sectorOtherPlaceholder: "e.g. Waste-to-energy",
     sectorOtherHelper:

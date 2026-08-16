@@ -57,7 +57,8 @@ Q9 and Q10 keep the same stored enums. Labels and advisor copy follow `projectCo
 - Refresh on Q1–Q12 restores the same answers and step.
 - Refresh on Review restores Review with the same answers.
 - Refresh on the Decision Card restores the card (snapshot wins over any leftover draft).
-- Welcome → Start interview clears the draft and the snapshot and opens Framing.
+- Welcome → Start assessment clears the draft and the snapshot and opens Framing.
+- After a Decision Card refresh, **Clear saved recommendation** returns to Review with the same answers. It must not bounce to Welcome or restart Framing.
 - Framing → Start interview opens Project Context (setup, not Question 1 of 13).
 - Project Context is required; Q1 still shows Question 1 of 12.
 - Refresh on Project Context restores the selected context.
@@ -72,6 +73,7 @@ Q9 and Q10 keep the same stored enums. Labels and advisor copy follow `projectCo
 - Empty-condition fallback is context-aware and only appears when no offtake/site/scale/geo condition is listed.
 - Review group title for Q9–Q11 follows Project Context (`Commercial and site` vs `Use, evidence, and site` vs `Use, evidence, and support readiness`). Layout is unchanged.
 - Language defaults to English. Selecting Türkçe persists under `invest-smarter.language.v0.1` and does not clear the draft or snapshot, or change `rules.v0.1`.
+- Project Context example prefix follows language (`Examples` / `Örnekler`). Stored enum values stay English.
 - The same snapshot can be viewed in EN or TR. Stored enum values stay English (`public_project`, `b2b_contract`, …).
 - Welcome no longer claims AI, Market, Financial, or report-generation capabilities. English and Turkish both use the honesty-pass copy. Language selector still persists. **Start assessment** still clears draft and snapshot and starts a new run.
 
@@ -80,7 +82,7 @@ Q9 and Q10 keep the same stored enums. Labels and advisor copy follow `projectCo
 - Open `/qa/decision` directly. It is not linked from Welcome.
 - Seven fixtures: Strong, Average, Weak, Hypothesis mega, Financing read without paper, Bank screen with hypothesis, Restricted geography.
 - Click a fixture. The real Decision Card must render. Expected vs actual posture/confidence show Pass or Check.
-- Switching EN/TR changes card copy only, not the actual decision numbers.
+- Switching EN/TR changes Decision Card copy only. Expected vs actual posture labels stay in English (`Proceed with conditions` / `Defer`). Confidence numbers do not change. Harness chrome such as Passed / Başarılı may still switch language.
 - Refreshing `/qa/decision` does **not** restore the fixture. The user’s Welcome/interview localStorage keys must be unchanged.
 - “Decision rules QA: Passed / Failed” runs `verifyDecisionRulesV01()` in memory.
 

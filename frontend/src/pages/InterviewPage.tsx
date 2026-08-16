@@ -235,15 +235,7 @@ export default function InterviewPage() {
           onEvaluatorName={wizard.setEvaluatorName}
           onEvaluatorReason={wizard.setEvaluatorReason}
           onRecordDecision={wizard.recordEvaluatorDecision}
-          onClearSaved={() => {
-            wizard.clearSavedRecommendation();
-            if (!fromWelcome) {
-              navigate(".", {
-                replace: true,
-                state: { investmentIdea: copy.welcome.bootstrapIdea },
-              });
-            }
-          }}
+          onClearSaved={wizard.clearSavedRecommendation}
         />
       ) : null}
     </WizardShell>

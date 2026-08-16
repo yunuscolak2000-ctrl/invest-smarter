@@ -89,7 +89,7 @@ export default function HomePage() {
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-slate-950 px-6 py-16 sm:py-24">
+    <main className="relative min-h-screen overflow-hidden bg-slate-950 px-6 pt-20 pb-16 sm:py-24">
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-x-0 top-[-12%] mx-auto h-[420px] w-[min(100%,44rem)] rounded-full bg-emerald-500/10 blur-3xl"

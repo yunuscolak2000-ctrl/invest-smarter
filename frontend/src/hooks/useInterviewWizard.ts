@@ -498,10 +498,7 @@ export function useInterviewWizard(options: WizardOptions = {}) {
     minutesLeft: question?.minutesLeft,
     decisionView,
     hasSnapshot: snapshot !== null,
-    hasResumableDraft:
-      snapshot === null &&
-      visibleStep !== "framing" &&
-      visibleStep !== "decision",
+    hasResumableDraft: snapshot === null && visibleStep !== "framing",
     evaluatorStatus: snapshot?.evaluatorStatus ?? DEFAULT_EVALUATOR_STATUS,
     evaluatorName: snapshot?.evaluatorName ?? "",
     evaluatorReason: snapshot?.evaluatorReason ?? "",

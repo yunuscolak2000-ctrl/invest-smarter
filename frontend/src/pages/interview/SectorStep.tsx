@@ -61,6 +61,7 @@ export function SectorStep({
         onChange={onSelect}
         error={showOtherField ? null : error}
         placeholder={copy.q2.searchPlaceholder}
+        emptyMessage={copy.q2.emptyMessage}
       />
 
       {selectedLabel && !showOtherField ? (

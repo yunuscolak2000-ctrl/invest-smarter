@@ -130,7 +130,7 @@ export function DecisionCardScreen({
     .join(" ");
 
   return (
-    <article className="space-y-10 pb-[max(7rem,calc(5rem+env(safe-area-inset-bottom)))] sm:pb-24">
+    <article className="space-y-10">
       <header className="space-y-2" aria-label={copy.decision.sectionOpportunity}>
         <p className="text-base font-medium leading-snug text-white">
           {view.title}
@@ -302,7 +302,7 @@ export function DecisionCardScreen({
         ) : null}
       </section>
 
-      <footer className="space-y-3 border-t border-slate-800 pt-6">
+      <footer className="scroll-mb-[max(6rem,calc(4.5rem+env(safe-area-inset-bottom)))] space-y-3 border-t border-slate-800 pt-6">
         <p className="text-sm leading-relaxed text-slate-500">{view.disclaimer}</p>
         <p className="text-xs text-slate-600">{view.policyLabel}</p>
         <button
