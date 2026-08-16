@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { presentDecisionCard } from "../lib/presentDecisionCard";
 import {
   createRecommendationSnapshot,
@@ -135,10 +135,13 @@ export function useInterviewWizard(options: WizardOptions = {}) {
 
     const storedDraft = loadInterviewDraft();
     if (storedDraft) {
+      const needsContext = !storedDraft.draft.projectContext;
       return {
         snapshot: null as RecommendationSnapshot | null,
         draft: storedDraft.draft,
-        step: storedDraft.step,
+        step: (
+          needsContext ? "projectContext" : storedDraft.step
+        ) as WizardStepId,
         draftCreatedAt: storedDraft.createdAt,
       };
     }
@@ -184,6 +187,18 @@ export function useInterviewWizard(options: WizardOptions = {}) {
       updatedAt: new Date().toISOString(),
     });
   }, [draft, step]);
+
+  useLayoutEffect(() => {
+    if (draft.projectContext) return;
+    if (
+      step === "framing" ||
+      step === "decision" ||
+      step === "projectContext"
+    ) {
+      return;
+    }
+    setStep("projectContext");
+  }, [step, draft.projectContext]);
 
   function patchDraft(patch: Partial<InterviewDraft>) {
     setDraft((current) => ({ ...current, ...patch }));
@@ -244,33 +259,56 @@ export function useInterviewWizard(options: WizardOptions = {}) {
     window.scrollTo(0, 0);
   }
 
+  const visibleStep: WizardStepId =
+    !draft.projectContext &&
+    step !== "framing" &&
+    step !== "decision" &&
+    step !== "projectContext"
+      ? "projectContext"
+      : step;
+
   function goToStep(next: WizardStepId) {
     moveTo(next);
   }
 
   function goPrevious() {
-    if (step === "decision") {
+    if (visibleStep === "decision") {
       moveTo("review");
       return;
     }
-    const index = STEP_SEQUENCE.indexOf(step);
+    const index = STEP_SEQUENCE.indexOf(visibleStep);
     if (index > 0) moveTo(STEP_SEQUENCE[index - 1]);
   }
 
+  function goToProjectContext() {
+    moveTo("projectContext");
+  }
+
   function goNext() {
-    if (step === "framing") {
-      moveTo("projectContext");
+    if (visibleStep === "framing") {
+      goToProjectContext();
       return;
     }
 
-    const message = validateStep(step, draft);
+    if (visibleStep === "projectContext") {
+      const message = validateProjectContext(draft);
+      if (message) {
+        setError(message);
+        focusErrorControl();
+        return;
+      }
+      moveTo("q1");
+      return;
+    }
+
+    const message = validateStep(visibleStep, draft);
     if (message) {
       setError(message);
       focusErrorControl();
       return;
     }
 
-    const next = STEP_SEQUENCE[STEP_SEQUENCE.indexOf(step) + 1];
+    const next = STEP_SEQUENCE[STEP_SEQUENCE.indexOf(visibleStep) + 1];
     if (next) moveTo(next);
   }
 
@@ -401,16 +439,17 @@ export function useInterviewWizard(options: WizardOptions = {}) {
     moveTo("review");
   }
 
-  const isQuestionStep = step.startsWith("q");
+  const isQuestionStep = visibleStep.startsWith("q");
   const question = isQuestionStep
     ? {
-        number: Number(step.slice(1)),
-        minutesLeft: MINUTES_LEFT_BY_STEP[step as keyof typeof MINUTES_LEFT_BY_STEP],
+        number: Number(visibleStep.slice(1)),
+        minutesLeft:
+          MINUTES_LEFT_BY_STEP[visibleStep as keyof typeof MINUTES_LEFT_BY_STEP],
       }
     : undefined;
 
   const decisionView =
-    snapshot && step === "decision"
+    snapshot && visibleStep === "decision"
       ? presentDecisionCard(
           snapshot.decisionObject,
           snapshot.frozenDraft,
@@ -419,14 +458,14 @@ export function useInterviewWizard(options: WizardOptions = {}) {
       : null;
 
   return {
-    step,
+    step: visibleStep,
     draft,
     error,
     fieldsetRef,
     inputRef,
     ackRef,
     workingTitle:
-      snapshot && step === "decision"
+      snapshot && visibleStep === "decision"
         ? workingTitleFrom(snapshot.frozenDraft)
         : workingTitleFrom(draft),
     questionNumber: question?.number,
@@ -434,7 +473,10 @@ export function useInterviewWizard(options: WizardOptions = {}) {
     minutesLeft: question?.minutesLeft,
     decisionView,
     hasSnapshot: snapshot !== null,
-    hasResumableDraft: snapshot === null && step !== "framing" && step !== "decision",
+    hasResumableDraft:
+      snapshot === null &&
+      visibleStep !== "framing" &&
+      visibleStep !== "decision",
     evaluatorStatus: snapshot?.evaluatorStatus ?? DEFAULT_EVALUATOR_STATUS,
     evaluatorName: snapshot?.evaluatorName ?? "",
     evaluatorReason: snapshot?.evaluatorReason ?? "",
@@ -445,6 +487,7 @@ export function useInterviewWizard(options: WizardOptions = {}) {
     goPrevious,
     goNext,
     goToStep,
+    goToProjectContext,
     seeRecommendation,
     setProjectContext,
     setOpportunityType,

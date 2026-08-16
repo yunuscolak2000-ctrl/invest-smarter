@@ -32,6 +32,7 @@ export default function InterviewPage() {
   }
 
   const isFraming = wizard.step === "framing";
+  const isProjectContext = wizard.step === "projectContext";
   const isReview = wizard.step === "review";
   const isDecision = wizard.step === "decision";
 
@@ -44,7 +45,13 @@ export default function InterviewPage() {
     />
   ) : (
     <WizardFooter
-      onNext={isReview ? wizard.seeRecommendation : wizard.goNext}
+      onNext={
+        isFraming
+          ? wizard.goToProjectContext
+          : isReview
+            ? wizard.seeRecommendation
+            : wizard.goNext
+      }
       nextLabel={
         isFraming
           ? "Start interview"
@@ -69,7 +76,7 @@ export default function InterviewPage() {
     >
       {wizard.step === "framing" ? <FramingScreen /> : null}
 
-      {wizard.step === "projectContext" ? (
+      {isProjectContext ? (
         <ProjectContextStep
           value={wizard.draft.projectContext}
           onChange={wizard.setProjectContext}
