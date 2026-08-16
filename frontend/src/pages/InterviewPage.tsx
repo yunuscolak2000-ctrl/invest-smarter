@@ -15,6 +15,7 @@ import { FramingScreen } from "./interview/FramingScreen";
 import { LocationStep } from "./interview/LocationStep";
 import { OpportunityTypeStep } from "./interview/OpportunityTypeStep";
 import { ProductStep } from "./interview/ProductStep";
+import { ProjectContextStep } from "./interview/ProjectContextStep";
 import { ReviewScreen } from "./interview/ReviewScreen";
 import { ScaleStep } from "./interview/ScaleStep";
 import { SectorStep } from "./interview/SectorStep";
@@ -67,6 +68,15 @@ export default function InterviewPage() {
       footer={footer}
     >
       {wizard.step === "framing" ? <FramingScreen /> : null}
+
+      {wizard.step === "projectContext" ? (
+        <ProjectContextStep
+          value={wizard.draft.projectContext}
+          onChange={wizard.setProjectContext}
+          error={wizard.error}
+          controlRef={wizard.fieldsetRef}
+        />
+      ) : null}
 
       {wizard.step === "q1" ? (
         <OpportunityTypeStep

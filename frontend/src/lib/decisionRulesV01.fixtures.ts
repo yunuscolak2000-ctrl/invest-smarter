@@ -1,5 +1,6 @@
 /**
  * Deterministic Q1–Q12 fixtures for Decision Prototype v0.1.
+ * projectContext is setup only; it must not change rules.v0.1.
  * Not used by the UI. Pair with ./decisionRulesV01.qa.ts.
  */
 
@@ -11,6 +12,7 @@ function fromStrong(patch: Partial<InterviewDraft>): InterviewDraft {
 
 /** 1. Strong clean case — expansion / binding / secured / mandate screen */
 export const FIXTURE_STRONG: InterviewDraft = {
+  projectContext: "private_investment",
   opportunityType: "expansion",
   sectorCode: "energy.renewable.solar",
   sectorLabel: "Energy — Solar",
@@ -32,6 +34,7 @@ export const FIXTURE_STRONG: InterviewDraft = {
 
 /** 2. Average conditions — greenfield / advanced / searching */
 export const FIXTURE_AVERAGE: InterviewDraft = {
+  projectContext: "private_investment",
   opportunityType: "greenfield",
   sectorCode: "energy.renewable.solar",
   sectorLabel: "Energy — Solar",
@@ -53,6 +56,7 @@ export const FIXTURE_AVERAGE: InterviewDraft = {
 
 /** 3. Weak defer — stacked soft unknowns + bank screen + financing read */
 export const FIXTURE_WEAK: InterviewDraft = {
+  projectContext: "private_investment",
   opportunityType: "greenfield",
   sectorCode: "other",
   sectorLabel: null,

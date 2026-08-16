@@ -3,13 +3,17 @@
  * Demo storage, not an archive. Invalid payloads are discarded.
  */
 
-import { validateInterviewDraft } from "./interviewValidation";
+import { validateInterviewQuestions } from "./interviewValidation";
 import type {
   DecisionObjectV01,
   EvaluatorDecisionStatus,
   RecommendationSnapshot,
 } from "../types/decision";
-import type { InterviewDraft } from "../types/interview";
+import {
+  PROJECT_CONTEXT_VALUES,
+  type InterviewDraft,
+  type ProjectContext,
+} from "../types/interview";
 
 export const RECOMMENDATION_SNAPSHOT_STORAGE_KEY =
   "invest-smarter.recommendationSnapshot.v0.1";
@@ -39,9 +43,19 @@ function isEvaluatorStatus(value: unknown): value is EvaluatorDecisionStatus {
   );
 }
 
+function isProjectContextField(value: unknown): value is ProjectContext | null {
+  return (
+    value === null ||
+    value === undefined ||
+    (typeof value === "string" &&
+      (PROJECT_CONTEXT_VALUES as readonly string[]).includes(value))
+  );
+}
+
 function isFrozenDraft(value: unknown): value is InterviewDraft {
   if (!isRecord(value)) return false;
-  return validateInterviewDraft(value as InterviewDraft) === null;
+  if (!isProjectContextField(value.projectContext)) return false;
+  return validateInterviewQuestions(value as InterviewDraft) === null;
 }
 
 function isDecisionObject(value: unknown): value is DecisionObjectV01 {
@@ -79,7 +93,13 @@ export function parseStoredRecommendationSnapshot(
     const parsed: unknown = JSON.parse(raw);
     if (!isRecord(parsed) || parsed.schema !== SNAPSHOT_SCHEMA) return null;
     if (!isRecommendationSnapshot(parsed.snapshot)) return null;
-    return parsed.snapshot;
+    return {
+      ...parsed.snapshot,
+      frozenDraft: {
+        ...parsed.snapshot.frozenDraft,
+        projectContext: parsed.snapshot.frozenDraft.projectContext ?? null,
+      },
+    };
   } catch {
     return null;
   }

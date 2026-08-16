@@ -3,13 +3,19 @@
  * Demo storage, not an archive. Invalid payloads are discarded.
  */
 
-import type { InterviewDraft, WizardStepId } from "../types/interview";
+import type {
+  InterviewDraft,
+  ProjectContext,
+  WizardStepId,
+} from "../types/interview";
+import { PROJECT_CONTEXT_VALUES } from "../types/interview";
 
 export const INTERVIEW_DRAFT_STORAGE_KEY = "invest-smarter.interviewDraft.v0.1";
 
 const DRAFT_SCHEMA = "invest-smarter.interviewDraft.v0.1" as const;
 
 const RESUME_STEPS: WizardStepId[] = [
+  "projectContext",
   "q1",
   "q2",
   "q3",
@@ -45,9 +51,20 @@ function isNullableString(value: unknown): value is string | null {
   return value === null || typeof value === "string";
 }
 
+function isProjectContextField(value: unknown): value is ProjectContext | null {
+  return (
+    value === null ||
+    (typeof value === "string" &&
+      (PROJECT_CONTEXT_VALUES as readonly string[]).includes(value))
+  );
+}
+
 function isInterviewDraft(value: unknown): value is InterviewDraft {
   if (!isRecord(value)) return false;
+  const projectContext =
+    value.projectContext === undefined ? null : value.projectContext;
   return (
+    isProjectContextField(projectContext) &&
     isNullableString(value.opportunityType) &&
     isNullableString(value.sectorCode) &&
     isNullableString(value.sectorLabel) &&
@@ -90,7 +107,10 @@ export function parseStoredInterviewDraft(
       return null;
     }
     return {
-      draft: record.draft,
+      draft: {
+        ...record.draft,
+        projectContext: record.draft.projectContext ?? null,
+      },
       step: record.step,
       createdAt: record.createdAt,
       updatedAt: record.updatedAt,

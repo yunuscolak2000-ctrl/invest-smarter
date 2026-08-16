@@ -8,6 +8,7 @@ import {
   EVALUATION_CONTEXT_OPTIONS,
   LOCATION_SPECIFICITY_OPTIONS,
   OPPORTUNITY_TYPE_OPTIONS,
+  PROJECT_CONTEXT_OPTIONS,
   SECTOR_TAXONOMY,
   SITE_CONTROL_OPTIONS,
 } from "../mocks/interview";
@@ -54,7 +55,7 @@ export function locationDisplayValue(draft: InterviewDraft): string {
 export type ReviewGroup = {
   title: string;
   rows: {
-    step: Extract<WizardStepId, `q${number}`>;
+    step: Extract<WizardStepId, `q${number}`> | "projectContext";
     label: string;
     value: string;
   }[];
@@ -68,6 +69,11 @@ export function reviewGroups(draft: InterviewDraft): ReviewGroup[] {
     {
       title: "Opportunity",
       rows: [
+        {
+          step: "projectContext",
+          label: "Project context",
+          value: optionLabel(PROJECT_CONTEXT_OPTIONS, draft.projectContext),
+        },
         {
           step: "q1",
           label: "Type of opportunity",
@@ -178,6 +184,7 @@ export function identityTitle(draft: InterviewDraft): string {
 export function identityMeta(draft: InterviewDraft): string {
   const country = getCountry(draft.countryCode);
   const currency = draft.currency ?? country?.currency ?? "";
+  const project = optionLabel(PROJECT_CONTEXT_OPTIONS, draft.projectContext);
   const stage = optionLabel(DEVELOPMENT_STAGE_OPTIONS, draft.developmentStage);
   const scale = draft.capexRange
     ? formatCapitalScale(currency, draft.capexRange)
@@ -186,7 +193,7 @@ export function identityMeta(draft: InterviewDraft): string {
     EVALUATION_CONTEXT_OPTIONS,
     draft.evaluationContext
   );
-  return [stage, scale, context].filter(Boolean).join(" · ");
+  return [project, stage, scale, context].filter(Boolean).join(" · ");
 }
 
 export function reviewConfidencePreview(draft: InterviewDraft): {

@@ -28,6 +28,7 @@ import {
   validateLocation,
   validateOpportunityType,
   validateProduct,
+  validateProjectContext,
   validateSector,
   validateSiteControl,
 } from "../lib/interviewValidation";
@@ -51,6 +52,7 @@ import {
   type InterviewDraft,
   type LocationSpecificity,
   type OpportunityType,
+  type ProjectContext,
   type SectorOption,
   type SiteControl,
   type WizardStepId,
@@ -58,6 +60,7 @@ import {
 
 const STEP_SEQUENCE: WizardStepId[] = [
   "framing",
+  "projectContext",
   "q1",
   "q2",
   "q3",
@@ -74,6 +77,7 @@ const STEP_SEQUENCE: WizardStepId[] = [
 ];
 
 const CARD_STEPS: WizardStepId[] = [
+  "projectContext",
   "q1",
   "q6",
   "q7",
@@ -188,6 +192,7 @@ export function useInterviewWizard(options: WizardOptions = {}) {
   }
 
   function validateStep(current: WizardStepId, currentDraft: InterviewDraft) {
+    if (current === "projectContext") return validateProjectContext(currentDraft);
     if (current === "q1") return validateOpportunityType(currentDraft);
     if (current === "q2") return validateSector(currentDraft);
     if (current === "q3") return validateProduct(currentDraft);
@@ -254,7 +259,7 @@ export function useInterviewWizard(options: WizardOptions = {}) {
 
   function goNext() {
     if (step === "framing") {
-      moveTo("q1");
+      moveTo("projectContext");
       return;
     }
 
@@ -284,6 +289,10 @@ export function useInterviewWizard(options: WizardOptions = {}) {
 
     setSnapshot(next);
     moveTo("decision");
+  }
+
+  function setProjectContext(value: ProjectContext) {
+    patchDraft({ projectContext: value });
   }
 
   function setOpportunityType(value: OpportunityType) {
@@ -437,6 +446,7 @@ export function useInterviewWizard(options: WizardOptions = {}) {
     goNext,
     goToStep,
     seeRecommendation,
+    setProjectContext,
     setOpportunityType,
     setSector,
     setSectorOther,

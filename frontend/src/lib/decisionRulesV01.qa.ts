@@ -8,6 +8,8 @@
  * localStorage restore uses parseStoredRecommendationSnapshot and
  * parseStoredInterviewDraft; invalid payloads must return null and never crash.
  * A recommendation snapshot outranks an in-progress draft on refresh.
+ * projectContext is setup, not Q13. It is persisted on the draft/snapshot
+ * and must not change rules.v0.1.
  *
  * Later, with Vitest:
  *   import { verifyDecisionRulesV01 } from "./decisionRulesV01.qa";
@@ -87,7 +89,7 @@ const FORBIDDEN_IN_VIEW: { label: string; pattern: RegExp }[] = [
   {
     label: "field enum",
     pattern:
-      /\b(demand_certainty|site_control|decision_needed|buyer_type|capex_range|evaluation_context|opportunity_type|veto_ids|condition_ids|fired_rule_ids|missing_inputs|schema_version)\b/,
+      /\b(demand_certainty|site_control|decision_needed|buyer_type|capex_range|evaluation_context|opportunity_type|project_context|private_investment|public_project|development_finance|veto_ids|condition_ids|fired_rule_ids|missing_inputs|schema_version)\b/,
   },
 ];
 
@@ -550,6 +552,24 @@ function persistenceChecks(): QaCheck[] {
       ) === null,
       "missing or invalid required fields must not restore"
     ),
+    check(
+      "persistence",
+      (() => {
+        const legacyDraft = { ...named.frozenDraft };
+        delete (legacyDraft as { projectContext?: unknown }).projectContext;
+        const restoredLegacy = parseStoredRecommendationSnapshot(
+          JSON.stringify({
+            schema: "invest-smarter.recommendationSnapshot.v0.1",
+            snapshot: { ...named, frozenDraft: legacyDraft },
+          })
+        );
+        return (
+          restoredLegacy !== null &&
+          restoredLegacy.frozenDraft.projectContext === null
+        );
+      })(),
+      "a pre-context snapshot must still restore; missing projectContext becomes empty"
+    ),
   ];
 }
 
@@ -609,6 +629,83 @@ function draftPersistenceChecks(): QaCheck[] {
       ) === null,
       "structurally invalid draft payload must not restore"
     ),
+    check(
+      "draft-persistence",
+      (() => {
+        const contextRecord = {
+          ...record,
+          step: "projectContext" as const,
+          draft: {
+            ...partial,
+            projectContext: "public_project" as const,
+          },
+        };
+        const restoredContext = parseStoredInterviewDraft(
+          serializeInterviewDraft(contextRecord)
+        );
+        return (
+          restoredContext?.step === "projectContext" &&
+          restoredContext.draft.projectContext === "public_project"
+        );
+      })(),
+      "refresh must restore Project Context as setup, not as a 13th question"
+    ),
+    check(
+      "draft-persistence",
+      (() => {
+        const legacyDraft = { ...partial };
+        delete (legacyDraft as { projectContext?: unknown }).projectContext;
+        const restoredLegacy = parseStoredInterviewDraft(
+          JSON.stringify({
+            schema: "invest-smarter.interviewDraft.v0.1",
+            record: { ...record, draft: legacyDraft },
+          })
+        );
+        return (
+          restoredLegacy !== null &&
+          restoredLegacy.draft.projectContext === null
+        );
+      })(),
+      "a pre-context in-progress draft must still restore"
+    ),
+  ];
+}
+
+function projectContextChecks(): QaCheck[] {
+  const publicDraft: InterviewDraft = {
+    ...FIXTURE_STRONG,
+    projectContext: "public_project",
+  };
+  const privateDecision = evaluateDecisionV01(FIXTURE_STRONG);
+  const publicDecision = evaluateDecisionV01(publicDraft);
+  const privateView = privateDecision
+    ? presentDecisionCard(privateDecision, FIXTURE_STRONG)
+    : null;
+  const publicView = publicDecision
+    ? presentDecisionCard(publicDecision, publicDraft)
+    : null;
+
+  return [
+    check(
+      "project-context",
+      privateDecision !== null && publicDecision !== null,
+      "rules.v0.1 must still evaluate when projectContext is on the draft"
+    ),
+    check(
+      "project-context",
+      JSON.stringify(privateDecision) === JSON.stringify(publicDecision),
+      "projectContext must not change posture, confidence, or conditions"
+    ),
+    check(
+      "project-context",
+      privateView?.meta.startsWith("Private investment ·") === true,
+      "Decision Card identity may include the human project-context label"
+    ),
+    check(
+      "project-context",
+      publicView?.meta.startsWith("Public project ·") === true,
+      "public project identity uses the Review label, not an enum"
+    ),
   ];
 }
 
@@ -619,6 +716,7 @@ export function verifyDecisionRulesV01(): QaReport {
     ...snapshotChecks(),
     ...persistenceChecks(),
     ...draftPersistenceChecks(),
+    ...projectContextChecks(),
   ];
   const failed = checks.filter((item) => !item.ok).length;
   return {

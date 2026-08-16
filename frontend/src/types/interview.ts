@@ -15,6 +15,7 @@ export function isInterviewLocationState(
 
 export type WizardStepId =
   | "framing"
+  | "projectContext"
   | "q1"
   | "q2"
   | "q3"
@@ -42,7 +43,17 @@ export type SelectOption<T extends string = string> = {
   value: T;
   label: string;
   helper?: string;
+  examples?: string;
 };
+
+export const PROJECT_CONTEXT_VALUES = [
+  "private_investment",
+  "public_project",
+  "development_finance",
+  "not_sure",
+] as const;
+
+export type ProjectContext = (typeof PROJECT_CONTEXT_VALUES)[number];
 
 export type LabeledOption = {
   code: string;
@@ -116,6 +127,7 @@ export type CountryOption = {
 };
 
 export type InterviewDraft = {
+  projectContext: ProjectContext | null;
   opportunityType: OpportunityType | null;
   sectorCode: string | null;
   sectorLabel: string | null;
@@ -136,7 +148,8 @@ export type InterviewDraft = {
 };
 
 export const EMPTY_INTERVIEW_DRAFT: InterviewDraft = {
-  opportunityType: null,
+  projectContext: null,
+  opportunityType: null;
   sectorCode: null,
   sectorLabel: null,
   sectorOther: "",

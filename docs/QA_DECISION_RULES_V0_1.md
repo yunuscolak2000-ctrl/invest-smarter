@@ -34,12 +34,15 @@ English words that match an answer (for example “hypothesis” in a sentence) 
 - Market / Financial / Strategic engines, scores, or bars
 - Backend, export, PDF, login, or cloud save
 - Multiple drafts, draft history, or analytics
+- A 13th scored question, a public-specific engine, or public-only interview questions
 
 Evaluator name and reason are **client overlay** fields on the snapshot. They do not change posture, confidence, conditions, or the frozen draft. Accept, amend, and reject all require a non-blank evaluator name. Accept does not require a reason. Amend and reject require name and reason. Whitespace-only name is invalid. Changing any interview answer still clears the snapshot **and** the localStorage snapshot item. Validation errors are UI-only and do not persist.
 
 The current snapshot is saved in this browser under `invest-smarter.recommendationSnapshot.v0.1`. Refresh on the Decision Card restores it. Invalid JSON or an incompatible schema is discarded silently.
 
 The in-progress interview is saved under `invest-smarter.interviewDraft.v0.1` (answers + current step). Refresh mid-wizard or on Review restores that draft. A valid snapshot always outranks a draft. Invalid draft JSON is discarded silently and must not crash the app. Starting a new interview from Welcome clears **both** the draft and the snapshot and starts Framing. “See recommendation” makes the snapshot the source of truth and clears the in-progress draft. “Clear saved recommendation” clears the snapshot only; Review then becomes the in-progress draft again. There is one draft and one snapshot — no history.
+
+`projectContext` is setup, not Q13. Progress remains Question *n* of 12. It is required before Q1, shown on Review, and stored on the in-progress draft and the snapshot `frozenDraft`. It does **not** change `rules.v0.1` posture, confidence, or conditions in this sprint. It is not added to the Decision Object schema.
 
 ## How to verify now
 
@@ -51,8 +54,12 @@ The in-progress interview is saved under `invest-smarter.interviewDraft.v0.1` (a
 - Refresh on Review restores Review with the same answers.
 - Refresh on the Decision Card restores the card (snapshot wins over any leftover draft).
 - Welcome → Start interview clears the draft and the snapshot and opens Framing.
+- Framing → Start interview opens Project Context (setup, not Question 1 of 13).
+- Project Context is required; Q1 still shows Question 1 of 12.
+- Refresh on Project Context restores the selected context.
 - Corrupt the draft key in DevTools; reload `/interview` — the app must not crash; invalid draft is discarded.
 - There is still only one draft key and one snapshot key. No history UI.
+- Changing Project Context does not change rules.v0.1 posture.
 
 **B. Call the helper** from a future test file or a throwaway console:
 

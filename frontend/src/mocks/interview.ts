@@ -7,10 +7,42 @@ import type {
   EvaluationContext,
   LocationSpecificity,
   OpportunityType,
+  ProjectContext,
   SectorOption,
   SelectOption,
   SiteControl,
 } from "../types/interview";
+
+export const PROJECT_CONTEXT_OPTIONS: SelectOption<ProjectContext>[] = [
+  {
+    value: "private_investment",
+    label: "Private investment",
+    helper:
+      "A company, investor, or sponsor is evaluating a commercial investment opportunity.",
+    examples: "Factory, energy plant, hotel, logistics center, processing facility",
+  },
+  {
+    value: "public_project",
+    label: "Public project",
+    helper:
+      "A municipality or public institution is evaluating a project for public benefit.",
+    examples:
+      "Infrastructure, tourism site, social facility, urban service, environmental project",
+  },
+  {
+    value: "development_finance",
+    label: "Development finance / grant screening",
+    helper:
+      "A grant, credit, or development institution is screening a project for support.",
+    examples:
+      "Development agency support, donor funding, concessional loan, EU program",
+  },
+  {
+    value: "not_sure",
+    label: "Not sure yet",
+    helper: "Use the standard screening path and refine later.",
+  },
+];
 
 export const OPPORTUNITY_TYPE_OPTIONS: SelectOption<OpportunityType>[] = [
   {
@@ -419,6 +451,12 @@ export const WIZARD_COPY = {
     title: "Before we start",
     message:
       "I’ll walk you through a short structured interview — twelve questions, about eight minutes. You’ll review everything before any analysis runs. Answer with what you know; ‘not sure yet’ is acceptable on most questions.",
+  },
+  projectContext: {
+    kicker: "Setup",
+    title: "What are you screening?",
+    message:
+      "This helps Invest Smarter ask the right questions and frame the recommendation correctly.",
   },
   q1: {
     title: "Type of opportunity",

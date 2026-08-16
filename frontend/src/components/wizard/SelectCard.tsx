@@ -62,6 +62,11 @@ export const SelectCardGroup = forwardRef<HTMLFieldSetElement, SelectCardGroupPr
                         {option.helper}
                       </span>
                     ) : null}
+                    {option.examples ? (
+                      <span className="mt-1 block text-xs leading-relaxed text-slate-500">
+                        Examples: {option.examples}
+                      </span>
+                    ) : null}
                   </span>
                   <span
                     aria-hidden="true"

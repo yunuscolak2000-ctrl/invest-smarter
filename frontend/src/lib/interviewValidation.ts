@@ -21,6 +21,10 @@ export function isOtherSector(code: string | null): boolean {
   return code === "other";
 }
 
+export function validateProjectContext(draft: InterviewDraft): string | null {
+  return draft.projectContext ? null : VALIDATION_COPY.selectOption;
+}
+
 export function validateOpportunityType(
   draft: InterviewDraft
 ): string | null {
@@ -102,6 +106,7 @@ export function validateDecisionNeeded(draft: InterviewDraft): string | null {
 
 const DRAFT_CHECKS: {
   step:
+    | "projectContext"
     | "q1"
     | "q2"
     | "q3"
@@ -116,6 +121,7 @@ const DRAFT_CHECKS: {
     | "q12";
   validate: (draft: InterviewDraft) => string | null;
 }[] = [
+  { step: "projectContext", validate: validateProjectContext },
   { step: "q1", validate: validateOpportunityType },
   { step: "q2", validate: validateSector },
   { step: "q3", validate: validateProduct },
@@ -129,6 +135,17 @@ const DRAFT_CHECKS: {
   { step: "q11", validate: validateSiteControl },
   { step: "q12", validate: validateDecisionNeeded },
 ];
+
+export function validateInterviewQuestions(
+  draft: InterviewDraft
+): { step: Exclude<(typeof DRAFT_CHECKS)[number]["step"], "projectContext">; message: string } | null {
+  for (const check of DRAFT_CHECKS) {
+    if (check.step === "projectContext") continue;
+    const message = check.validate(draft);
+    if (message) return { step: check.step, message };
+  }
+  return null;
+}
 
 export function validateInterviewDraft(
   draft: InterviewDraft
