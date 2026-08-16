@@ -9,8 +9,9 @@
  * parseStoredInterviewDraft; invalid payloads must return null and never crash.
  * A recommendation snapshot outranks an in-progress draft on refresh.
  * projectContext is setup, not Q13. It is persisted on the draft/snapshot
- * and must not change rules.v0.1. Q9/Q10 labels follow projectContext;
- * stored enums stay the same. not_sure uses private copy.
+ * and must not change rules.v0.1. Q9/Q10 labels and Decision Card
+ * microcopy follow projectContext; stored enums stay the same.
+ * not_sure uses private copy.
  *
  * Later, with Vitest:
  *   import { verifyDecisionRulesV01 } from "./decisionRulesV01.qa";
@@ -22,11 +23,16 @@ import { EMPTY_INTERVIEW_DRAFT, type InterviewDraft } from "../types/interview";
 import { evaluateDecisionV01 } from "./decisionRulesV01";
 import {
   buyerTypeOptions,
+  conditionsIntroLine,
   copyDialect,
   demandCertaintyOptions,
+  emptyConditionFallback,
   grantDisclaimer,
+  nextCommissionLine,
+  proceedWhyLine,
   q9Prompt,
   q10Prompt,
+  reviewSiteGroupTitle,
 } from "./contextAwareCopy";
 import {
   createRecommendationSnapshot,
@@ -686,13 +692,21 @@ function projectContextChecks(): QaCheck[] {
     ...FIXTURE_STRONG,
     projectContext: "public_project",
   };
+  const strongDev: InterviewDraft = {
+    ...FIXTURE_STRONG,
+    projectContext: "development_finance",
+  };
   const privateDecision = evaluateDecisionV01(FIXTURE_STRONG);
   const publicDecision = evaluateDecisionV01(publicDraft);
+  const strongDevDecision = evaluateDecisionV01(strongDev);
   const privateView = privateDecision
     ? presentDecisionCard(privateDecision, FIXTURE_STRONG)
     : null;
   const publicView = publicDecision
     ? presentDecisionCard(publicDecision, publicDraft)
+    : null;
+  const strongDevView = strongDevDecision
+    ? presentDecisionCard(strongDevDecision, strongDev)
     : null;
 
   const averagePublic: InterviewDraft = {
@@ -813,6 +827,62 @@ function projectContextChecks(): QaCheck[] {
         publicAverageView?.grantDisclaimer === null &&
         privateAverageView?.grantDisclaimer === null,
       "Decision Card shows the grant disclaimer only for development finance"
+    ),
+    check(
+      "card-microcopy",
+      privateView?.conditionsIntro ===
+        conditionsIntroLine("private_investment", false) &&
+        publicView?.conditionsIntro ===
+          "Accept these before committing further public time or budget." &&
+        devAverageView?.conditionsIntro ===
+          "Accept these before taking this file into appraisal or support preparation." &&
+        unsureAverageView?.conditionsIntro ===
+          "Accept these before spending further resources.",
+      "conditions intro follows projectContext; not_sure matches private"
+    ),
+    check(
+      "card-microcopy",
+      privateView?.next[0] === nextCommissionLine("private_investment") &&
+        publicView?.next[0] ===
+          "Do not commission a study or commit public resources on this recommendation alone." &&
+        devAverageView?.next[0] ===
+          "Do not treat this as an eligibility decision, award decision, or funding commitment." &&
+        unsureAverageView?.next[0] ===
+          "Do not commission a feasibility study on this recommendation.",
+      "first next bullet follows projectContext; not_sure matches private"
+    ),
+    check(
+      "card-microcopy",
+      privateView?.conditions.includes(
+        emptyConditionFallback("private_investment")
+      ) === true &&
+        publicView?.conditions.includes(
+          emptyConditionFallback("public_project")
+        ) === true &&
+        strongDevView?.conditions.includes(
+          emptyConditionFallback("development_finance")
+        ) === true,
+      "empty-condition fallback is context-aware; Strong has no factual conditions"
+    ),
+    check(
+      "card-microcopy",
+      privateView?.why.includes(proceedWhyLine("private_investment")) ===
+        true &&
+        publicView?.why.includes(proceedWhyLine("public_project")) === true &&
+        devAverageView?.why.includes(
+          proceedWhyLine("development_finance")
+        ) === true &&
+        unsureAverageView?.why.includes(proceedWhyLine("not_sure")) === true,
+      "proceed-with-conditions why line follows projectContext"
+    ),
+    check(
+      "card-microcopy",
+      reviewSiteGroupTitle("private_investment") === "Commercial and site" &&
+        reviewSiteGroupTitle("not_sure") === "Commercial and site" &&
+        reviewSiteGroupTitle("public_project") === "Use, evidence, and site" &&
+        reviewSiteGroupTitle("development_finance") ===
+          "Use, evidence, and support readiness",
+      "Review site-group title follows projectContext; not_sure matches private"
     ),
   ];
 }

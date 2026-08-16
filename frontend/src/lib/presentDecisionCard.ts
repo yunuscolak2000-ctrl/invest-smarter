@@ -6,8 +6,12 @@ import {
 } from "../types/decision";
 import type { InterviewDraft } from "../types/interview";
 import {
+  conditionsIntroLine,
+  emptyConditionFallback,
   grantDisclaimer,
+  nextCommissionLine,
   offtakeConditionSentence,
+  proceedWhyLine,
 } from "./contextAwareCopy";
 import { identityMeta, identityTitle } from "./interviewLabels";
 
@@ -64,7 +68,10 @@ function conditionSentence(
   return null;
 }
 
-function whyBullets(decision: DecisionObjectV01): string[] {
+function whyBullets(
+  decision: DecisionObjectV01,
+  draft: InterviewDraft
+): string[] {
   const vetoes = new Set(decision.veto_ids);
   const deferVetoes = [
     "VETO-CONF-THIN",
@@ -80,9 +87,7 @@ function whyBullets(decision: DecisionObjectV01): string[] {
   const bullets: string[] = [];
 
   if (decision.posture === "proceed_with_conditions" && noDefer) {
-    bullets.push(
-      "The file has a usable shape for a screen, but only if the conditions are accepted."
-    );
+    bullets.push(proceedWhyLine(draft.projectContext));
   }
   if (vetoes.has("VETO-BUYER-MEGA")) {
     bullets.push(
@@ -140,8 +145,11 @@ function whyBullets(decision: DecisionObjectV01): string[] {
   return bullets.slice(0, 6);
 }
 
-function nextBullets(decision: DecisionObjectV01): string[] {
-  const next = [COPY.nextCommission];
+function nextBullets(
+  decision: DecisionObjectV01,
+  draft: InterviewDraft
+): string[] {
+  const next = [nextCommissionLine(draft.projectContext)];
 
   if (decision.posture === "proceed_with_conditions") {
     if (decision.condition_ids.length > 0) {
@@ -200,9 +208,7 @@ export function presentDecisionCard(
     .filter((sentence): sentence is string => Boolean(sentence));
 
   if (conditions.length === 0) {
-    conditions.push(
-      "This screen does not issue an unconditional proceed. Treat the recommendation as conditional even when no further facts are listed here."
-    );
+    conditions.push(emptyConditionFallback(draft.projectContext));
   }
 
   return {
@@ -222,13 +228,13 @@ export function presentDecisionCard(
     grantDisclaimer: grantDisclaimer(draft.projectContext),
     confidenceLine: `${bandLabel} · ${decision.confidence.value} of 100 · ${COPY.confidenceSuffix}`,
     confidenceDrivers: decision.confidence.drivers,
-    conditionsIntro:
+    conditionsIntro: conditionsIntroLine(
+      draft.projectContext,
       decision.posture === "defer"
-        ? "Closing these is what would allow a new recommendation."
-        : "Accept these before spending further resources.",
+    ),
     conditions,
-    why: whyBullets(decision),
-    next: nextBullets(decision),
+    why: whyBullets(decision, draft),
+    next: nextBullets(decision, draft),
     disclaimer:
       evaluatorStatus === "not_accepted"
         ? COPY.disclaimer

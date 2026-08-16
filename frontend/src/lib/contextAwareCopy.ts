@@ -1,5 +1,5 @@
 /**
- * Context-aware wording for Q9, Q10, and Decision Card offtake copy.
+ * Context-aware wording for Q9, Q10, Review, and Decision Card microcopy.
  * Same stored enums. Same rules.v0.1. not_sure uses the private dialect.
  */
 
@@ -158,4 +158,71 @@ export function grantDisclaimer(
   context: ProjectContext | null | undefined
 ): string | null {
   return context === "development_finance" ? GRANT_DISCLAIMER : null;
+}
+
+export function conditionsIntroLine(
+  context: ProjectContext | null | undefined,
+  isDefer: boolean
+): string {
+  if (isDefer) {
+    return "Closing these is what would allow a new recommendation.";
+  }
+  const dialect = copyDialect(context);
+  if (dialect === "public") {
+    return "Accept these before committing further public time or budget.";
+  }
+  if (dialect === "development_finance") {
+    return "Accept these before taking this file into appraisal or support preparation.";
+  }
+  return "Accept these before spending further resources.";
+}
+
+export function emptyConditionFallback(
+  context: ProjectContext | null | undefined
+): string {
+  const dialect = copyDialect(context);
+  if (dialect === "public") {
+    return "No additional public-evidence condition was triggered. This prototype still does not issue an unconditional proceed.";
+  }
+  if (dialect === "development_finance") {
+    return "No additional appraisal condition was triggered. This prototype still does not issue an eligibility opinion or funding commitment.";
+  }
+  return "No additional evidence condition was triggered. This prototype still does not issue an unconditional proceed.";
+}
+
+export function nextCommissionLine(
+  context: ProjectContext | null | undefined
+): string {
+  const dialect = copyDialect(context);
+  if (dialect === "public") {
+    return "Do not commission a study or commit public resources on this recommendation alone.";
+  }
+  if (dialect === "development_finance") {
+    return "Do not treat this as an eligibility decision, award decision, or funding commitment.";
+  }
+  return WIZARD_COPY.decision.nextCommission;
+}
+
+export function proceedWhyLine(
+  context: ProjectContext | null | undefined
+): string {
+  const dialect = copyDialect(context);
+  if (dialect === "public") {
+    return "The project has a usable shape for an initial public-project screen, but only if the conditions are accepted.";
+  }
+  if (dialect === "development_finance") {
+    return "The file has a usable shape for an initial support screen, but only if the conditions are accepted.";
+  }
+  return "The file has a usable shape for a screen, but only if the conditions are accepted.";
+}
+
+export function reviewSiteGroupTitle(
+  context: ProjectContext | null | undefined
+): string {
+  const dialect = copyDialect(context);
+  if (dialect === "public") return "Use, evidence, and site";
+  if (dialect === "development_finance") {
+    return "Use, evidence, and support readiness";
+  }
+  return "Commercial and site";
 }

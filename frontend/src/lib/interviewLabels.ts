@@ -15,6 +15,7 @@ import {
   demandCertaintyOptions,
   q9Prompt,
   q10Prompt,
+  reviewSiteGroupTitle,
 } from "./contextAwareCopy";
 import type {
   CapexRange,
@@ -148,7 +149,7 @@ export function reviewGroups(draft: InterviewDraft): ReviewGroup[] {
       ],
     },
     {
-      title: "Commercial and site",
+      title: reviewSiteGroupTitle(draft.projectContext),
       rows: [
         {
           step: "q9",
