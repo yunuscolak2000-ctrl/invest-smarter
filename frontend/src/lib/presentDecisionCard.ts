@@ -11,6 +11,7 @@ import {
   grantDisclaimer,
   nextCommissionLine,
   offtakeConditionSentence,
+  proceedPostureSentence,
   proceedWhyLine,
 } from "./contextAwareCopy";
 import { identityMeta, identityTitle } from "./interviewLabels";
@@ -222,7 +223,7 @@ export function presentDecisionCard(
     postureSentence:
       decision.posture === "defer"
         ? "This file is not decision-ready. Do not spend further time or budget on it as framed until the gaps below are closed."
-        : "Advance only if the conditions below are accepted. This is not clearance to commission a full study.",
+        : proceedPostureSentence(draft.projectContext),
     bankDisclaimer:
       draft.evaluationContext === "bank_screen" ? COPY.bankDisclaimer : null,
     grantDisclaimer: grantDisclaimer(draft.projectContext),

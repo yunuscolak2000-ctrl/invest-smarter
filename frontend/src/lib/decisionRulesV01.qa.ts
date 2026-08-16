@@ -29,6 +29,7 @@ import {
   emptyConditionFallback,
   grantDisclaimer,
   nextCommissionLine,
+  proceedPostureSentence,
   proceedWhyLine,
   q9Prompt,
   q10Prompt,
@@ -861,8 +862,36 @@ function projectContextChecks(): QaCheck[] {
         ) === true &&
         strongDevView?.conditions.includes(
           emptyConditionFallback("development_finance")
-        ) === true,
+        ) === true &&
+        emptyConditionFallback("public_project") ===
+          "No additional public-evidence condition was triggered. Treat this as a conditional screen, not authorization to commit public resources." &&
+        emptyConditionFallback("development_finance") ===
+          "No additional appraisal condition was triggered. Treat this as a conditional screen, not an eligibility opinion or funding commitment.",
       "empty-condition fallback is context-aware; Strong has no factual conditions"
+    ),
+    check(
+      "card-microcopy",
+      publicAverageView?.conditions.includes(
+        emptyConditionFallback("public_project")
+      ) !== true &&
+        privateAverageView?.conditions.includes(
+          emptyConditionFallback("private_investment")
+        ) !== true,
+      "empty-condition fallback must not replace offtake/site/scale/geo conditions"
+    ),
+    check(
+      "card-microcopy",
+      privateView?.postureSentence ===
+        proceedPostureSentence("private_investment") &&
+        publicView?.postureSentence ===
+          "Advance only if the conditions below are accepted. This is not clearance to commit public resources or launch a study." &&
+        publicView.postureSentence.includes("commission a full study") ===
+          false &&
+        strongDevView?.postureSentence ===
+          "Advance only if the conditions below are accepted. This is not clearance to enter appraisal, approve support, or commit funding." &&
+        unsureAverageView?.postureSentence ===
+          "Advance only if the conditions below are accepted. This is not clearance to commission a full study.",
+      "proceed posture sentence follows projectContext; public does not say commission a full study"
     ),
     check(
       "card-microcopy",

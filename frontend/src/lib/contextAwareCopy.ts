@@ -182,10 +182,10 @@ export function emptyConditionFallback(
 ): string {
   const dialect = copyDialect(context);
   if (dialect === "public") {
-    return "No additional public-evidence condition was triggered. This prototype still does not issue an unconditional proceed.";
+    return "No additional public-evidence condition was triggered. Treat this as a conditional screen, not authorization to commit public resources.";
   }
   if (dialect === "development_finance") {
-    return "No additional appraisal condition was triggered. This prototype still does not issue an eligibility opinion or funding commitment.";
+    return "No additional appraisal condition was triggered. Treat this as a conditional screen, not an eligibility opinion or funding commitment.";
   }
   return "No additional evidence condition was triggered. This prototype still does not issue an unconditional proceed.";
 }
@@ -201,6 +201,19 @@ export function nextCommissionLine(
     return "Do not treat this as an eligibility decision, award decision, or funding commitment.";
   }
   return WIZARD_COPY.decision.nextCommission;
+}
+
+export function proceedPostureSentence(
+  context: ProjectContext | null | undefined
+): string {
+  const dialect = copyDialect(context);
+  if (dialect === "public") {
+    return "Advance only if the conditions below are accepted. This is not clearance to commit public resources or launch a study.";
+  }
+  if (dialect === "development_finance") {
+    return "Advance only if the conditions below are accepted. This is not clearance to enter appraisal, approve support, or commit funding.";
+  }
+  return "Advance only if the conditions below are accepted. This is not clearance to commission a full study.";
 }
 
 export function proceedWhyLine(

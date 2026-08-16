@@ -44,7 +44,7 @@ The in-progress interview is saved under `invest-smarter.interviewDraft.v0.1` (a
 
 `projectContext` is setup, not Q13. Progress remains Question *n* of 12. It is required before Q1, shown on Review, and stored on the in-progress draft and the snapshot `frozenDraft`. It does **not** change `rules.v0.1` posture, confidence, or conditions. It is not added to the Decision Object schema.
 
-Q9 and Q10 keep the same stored enums. Labels and advisor copy follow `projectContext`. `not_sure` uses the private-investment wording. Public and development-finance Decision Cards replace commercial offtake language with a public-use sentence when an offtake condition is shown. A development-finance disclaimer (“not an eligibility opinion…”) appears only for `development_finance`. Decision Card conditions intro, first next bullet, empty-condition fallback, and the proceed-with-conditions why line also follow `projectContext`. Rules output is unchanged.
+Q9 and Q10 keep the same stored enums. Labels and advisor copy follow `projectContext`. `not_sure` uses the private-investment wording. Public and development-finance Decision Cards replace commercial offtake language with a public-use sentence when an offtake condition is shown. A development-finance disclaimer (“not an eligibility opinion…”) appears only for `development_finance`. Decision Card conditions intro, first next bullet, empty-condition fallback, proceed posture sentence, and the proceed-with-conditions why line also follow `projectContext`. Rules output is unchanged.
 
 ## How to verify now
 
@@ -65,7 +65,9 @@ Q9 and Q10 keep the same stored enums. Labels and advisor copy follow `projectCo
 - Q9/Q10 labels follow Project Context; stored values stay the same. `not_sure` matches private copy.
 - A public or development-finance card with an offtake condition shows the public-use sentence, not PPA/offtake commercial copy.
 - The grant/eligibility disclaimer appears only when Project Context is development finance.
-- Card microcopy (conditions intro, first next bullet, empty-condition fallback, proceed why line) follows Project Context. `not_sure` matches private. Rules output is unchanged.
+- Card microcopy (conditions intro, first next bullet, empty-condition fallback, proceed why line, proceed posture sentence) follows Project Context. `not_sure` matches private. Rules output is unchanged.
+- Public proceed posture sentence does not say “commission a full study.” Development-finance posture says this is not clearance to enter appraisal, approve support, or commit funding.
+- Empty-condition fallback is context-aware and only appears when no offtake/site/scale/geo condition is listed.
 - Review group title for Q9–Q11 follows Project Context (`Commercial and site` vs `Use, evidence, and site` vs `Use, evidence, and support readiness`). Layout is unchanged.
 
 **B. Call the helper** from a future test file or a throwaway console:
