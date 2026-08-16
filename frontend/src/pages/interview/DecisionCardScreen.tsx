@@ -114,7 +114,7 @@ export function DecisionCardScreen({
     .join(" ");
 
   return (
-    <article className="space-y-10 pb-40">
+    <article className="space-y-10 pb-[max(7rem,calc(5rem+env(safe-area-inset-bottom)))] sm:pb-24">
       <header className="space-y-2" aria-label="Opportunity">
         <p className="text-base font-medium leading-snug text-white">
           {view.title}
@@ -125,18 +125,8 @@ export function DecisionCardScreen({
         <p className="text-sm leading-relaxed text-slate-400">{view.meta}</p>
         <p className="text-sm leading-relaxed text-slate-500">{view.status}</p>
         <p className="text-xs leading-relaxed text-slate-600">
-          {WIZARD_COPY.decision.snapshotNote}
-        </p>
-        <p className="text-xs leading-relaxed text-slate-600">
           {WIZARD_COPY.decision.snapshotPersisted}
         </p>
-        <button
-          type="button"
-          onClick={onClearSaved}
-          className="text-left text-xs text-slate-500 underline-offset-2 hover:text-slate-300 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400/70"
-        >
-          {WIZARD_COPY.decision.clearSaved}
-        </button>
       </header>
 
       <section className="space-y-3" aria-label="Decision">
@@ -200,9 +190,11 @@ export function DecisionCardScreen({
         </ul>
       </section>
 
-      <section className="space-y-3" aria-label="Evaluator decision">
-        <SectionLabel>{COPY.sectionLabel}</SectionLabel>
-        <p className="text-sm leading-relaxed text-slate-400">{COPY.helper}</p>
+      <section className="space-y-6" aria-label="Evaluator decision">
+        <div className="space-y-2">
+          <SectionLabel>{COPY.sectionLabel}</SectionLabel>
+          <p className="text-sm leading-relaxed text-slate-400">{COPY.helper}</p>
+        </div>
         <TextField
           id="evaluator-name"
           label={COPY.nameLabel}
@@ -211,30 +203,40 @@ export function DecisionCardScreen({
           placeholder={COPY.namePlaceholder}
           helper={COPY.nameHelper}
         />
-        <div
-          role="radiogroup"
-          aria-label={COPY.sectionLabel}
-          className="grid grid-cols-1 gap-3"
-        >
-          {EVALUATOR_ACTIONS.map((action) => {
-            const selected = evaluatorStatus === action.status;
-            return (
-              <button
-                key={action.status}
-                type="button"
-                role="radio"
-                aria-checked={selected}
-                onClick={() => handleRecord(action.status)}
-                className={`min-h-11 rounded-2xl border px-4 py-3.5 text-left text-sm font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 ${
-                  selected
-                    ? "border-slate-400 bg-slate-800 text-white"
-                    : "border-slate-800 bg-slate-900 text-slate-200 hover:border-slate-600"
-                }`}
-              >
-                {action.label}
-              </button>
-            );
-          })}
+        <div className="space-y-3">
+          <p className="text-sm leading-relaxed text-slate-400">
+            {COPY.statusChoice}
+          </p>
+          <div
+            role="radiogroup"
+            aria-label={COPY.statusChoice}
+            className="grid grid-cols-1 gap-3"
+          >
+            {EVALUATOR_ACTIONS.map((action) => {
+              const selected = evaluatorStatus === action.status;
+              return (
+                <button
+                  key={action.status}
+                  type="button"
+                  role="radio"
+                  aria-checked={selected}
+                  onClick={() => handleRecord(action.status)}
+                  className={`min-h-12 rounded-2xl border px-4 py-4 text-left transition focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 ${
+                    selected
+                      ? "border-slate-300 bg-slate-800 text-white ring-1 ring-slate-300"
+                      : "border-slate-800 bg-slate-900 text-slate-200 hover:border-slate-600"
+                  }`}
+                >
+                  <span className="block text-sm font-semibold">{action.label}</span>
+                  {selected ? (
+                    <span className="mt-1 block text-xs font-medium text-slate-400">
+                      Selected
+                    </span>
+                  ) : null}
+                </button>
+              );
+            })}
+          </div>
         </div>
         <div className="space-y-2">
           <label
@@ -247,11 +249,11 @@ export function DecisionCardScreen({
             ref={reasonRef}
             id="evaluator-reason"
             value={evaluatorReason}
-            rows={4}
+            rows={5}
             onChange={(event) => handleReasonChange(event.target.value)}
             aria-invalid={reasonError ? true : undefined}
             aria-describedby={reasonDescribedBy}
-            className="w-full rounded-2xl border border-slate-700 bg-slate-900 px-4 py-3 text-base text-slate-100 placeholder:text-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
+            className="min-h-32 w-full scroll-mb-36 rounded-2xl border border-slate-700 bg-slate-900 px-4 py-3 text-base leading-relaxed text-slate-100 placeholder:text-slate-500 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-400/30"
           />
           <p id={reasonHelperId} className="text-sm text-slate-500">
             {COPY.reasonHelper}
@@ -273,9 +275,16 @@ export function DecisionCardScreen({
         ) : null}
       </section>
 
-      <footer className="space-y-2 border-t border-slate-800 pt-6">
+      <footer className="space-y-3 border-t border-slate-800 pt-6">
         <p className="text-sm leading-relaxed text-slate-500">{view.disclaimer}</p>
         <p className="text-xs text-slate-600">{view.policyLabel}</p>
+        <button
+          type="button"
+          onClick={onClearSaved}
+          className="block text-left text-xs text-slate-600 hover:text-slate-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400/70"
+        >
+          {WIZARD_COPY.decision.clearSaved}
+        </button>
       </footer>
     </article>
   );

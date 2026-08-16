@@ -192,7 +192,7 @@ export function presentDecisionCard(
 
   if (conditions.length === 0) {
     conditions.push(
-      "This intake policy does not issue an unconditional proceed. Treat the recommendation as conditional even when no further facts are listed here."
+      "This screen does not issue an unconditional proceed. Treat the recommendation as conditional even when no further facts are listed here."
     );
   }
 

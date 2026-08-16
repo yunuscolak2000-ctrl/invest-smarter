@@ -34,7 +34,7 @@ export function WizardShell({
         </div>
       </header>
 
-      <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col px-4 pb-28 pt-6 sm:px-6 sm:pt-8">
+      <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col px-4 pb-[max(8rem,calc(6.5rem+env(safe-area-inset-bottom)))] pt-6 sm:px-6 sm:pt-8">
         {showProgress ? (
           <div className="mb-8">
             <WizardProgress

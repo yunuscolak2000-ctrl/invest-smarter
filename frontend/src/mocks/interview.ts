@@ -532,13 +532,15 @@ export const WIZARD_COPY = {
       "Recommendation could not be produced. Return to Review.",
     nextCommission:
       "Do not commission a feasibility study on this recommendation.",
-    snapshotNote: "Recommendation snapshot created for this review.",
-    snapshotPersisted: "Saved in this browser for this demo.",
+    snapshotNote: "Based on the answers confirmed in Review.",
+    snapshotPersisted:
+      "Prototype: this demo saves one recommendation in this browser only.",
     clearSaved: "Clear saved recommendation",
     evaluator: {
       sectionLabel: "Evaluator decision",
       helper:
-        "Record how the evaluator treats this recommendation. This does not change the rules output.",
+        "Record how the evaluator treats this recommendation. This does not change the recommendation itself.",
+      statusChoice: "Choose one status for this recommendation.",
       accept: "Accept recommendation",
       amend: "Amend recommendation",
       reject: "Reject recommendation",
