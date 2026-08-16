@@ -533,6 +533,8 @@ export const WIZARD_COPY = {
     nextCommission:
       "Do not commission a feasibility study on this recommendation.",
     snapshotNote: "Recommendation snapshot created for this review.",
+    snapshotPersisted: "Saved in this browser for this demo.",
+    clearSaved: "Clear saved recommendation",
     evaluator: {
       sectionLabel: "Evaluator decision",
       helper:

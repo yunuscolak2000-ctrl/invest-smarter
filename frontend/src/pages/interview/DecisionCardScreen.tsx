@@ -15,6 +15,7 @@ type DecisionCardScreenProps = {
   onEvaluatorName: (value: string) => void;
   onEvaluatorReason: (value: string) => void;
   onRecordDecision: (status: RecordedStatus, reason: string) => string | null;
+  onClearSaved: () => void;
 };
 
 const COPY = WIZARD_COPY.decision.evaluator;
@@ -57,6 +58,7 @@ export function DecisionCardScreen({
   onEvaluatorName,
   onEvaluatorReason,
   onRecordDecision,
+  onClearSaved,
 }: DecisionCardScreenProps) {
   const headingRef = useRef<HTMLHeadingElement>(null);
   const reasonRef = useRef<HTMLTextAreaElement>(null);
@@ -125,6 +127,16 @@ export function DecisionCardScreen({
         <p className="text-xs leading-relaxed text-slate-600">
           {WIZARD_COPY.decision.snapshotNote}
         </p>
+        <p className="text-xs leading-relaxed text-slate-600">
+          {WIZARD_COPY.decision.snapshotPersisted}
+        </p>
+        <button
+          type="button"
+          onClick={onClearSaved}
+          className="text-left text-xs text-slate-500 underline-offset-2 hover:text-slate-300 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400/70"
+        >
+          {WIZARD_COPY.decision.clearSaved}
+        </button>
       </header>
 
       <section className="space-y-3" aria-label="Decision">

@@ -23,9 +23,10 @@ import { SiteControlStep } from "./interview/SiteControlStep";
 export default function InterviewPage() {
   const location = useLocation();
   const navigate = useNavigate();
-  const wizard = useInterviewWizard();
+  const fromWelcome = isInterviewLocationState(location.state);
+  const wizard = useInterviewWizard({ resumeSaved: !fromWelcome });
 
-  if (!isInterviewLocationState(location.state)) {
+  if (!fromWelcome && !wizard.hasSnapshot) {
     return <Navigate to="/" replace />;
   }
 
@@ -200,6 +201,15 @@ export default function InterviewPage() {
           onEvaluatorName={wizard.setEvaluatorName}
           onEvaluatorReason={wizard.setEvaluatorReason}
           onRecordDecision={wizard.recordEvaluatorDecision}
+          onClearSaved={() => {
+            wizard.clearSavedRecommendation();
+            if (!fromWelcome) {
+              navigate(".", {
+                replace: true,
+                state: { investmentIdea: "New investment opportunity" },
+              });
+            }
+          }}
         />
       ) : null}
     </WizardShell>

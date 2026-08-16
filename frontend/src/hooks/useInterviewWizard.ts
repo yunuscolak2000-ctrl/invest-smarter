@@ -1,9 +1,14 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { presentDecisionCard } from "../lib/presentDecisionCard";
 import {
   createRecommendationSnapshot,
   evaluatorReasonError,
 } from "../lib/createRecommendationSnapshot";
+import {
+  clearRecommendationSnapshot,
+  loadRecommendationSnapshot,
+  saveRecommendationSnapshot,
+} from "../lib/recommendationSnapshotStorage";
 import {
   validateBuyerType,
   validateCapitalScale,
@@ -89,14 +94,51 @@ function defaultCurrency(draft: InterviewDraft): string {
   return getCountry(draft.countryCode)?.currency ?? "USD";
 }
 
-export function useInterviewWizard() {
-  const [step, setStep] = useState<WizardStepId>("framing");
-  const [draft, setDraft] = useState<InterviewDraft>(EMPTY_INTERVIEW_DRAFT);
+type WizardOptions = {
+  resumeSaved?: boolean;
+};
+
+export function useInterviewWizard(options: WizardOptions = {}) {
+  const resumeSaved = options.resumeSaved === true;
+  const [initial] = useState(() => {
+    if (!resumeSaved) {
+      return {
+        snapshot: null as RecommendationSnapshot | null,
+        draft: EMPTY_INTERVIEW_DRAFT,
+        step: "framing" as WizardStepId,
+      };
+    }
+    const stored = loadRecommendationSnapshot();
+    if (!stored) {
+      return {
+        snapshot: null as RecommendationSnapshot | null,
+        draft: EMPTY_INTERVIEW_DRAFT,
+        step: "framing" as WizardStepId,
+      };
+    }
+    return {
+      snapshot: stored,
+      draft: { ...stored.frozenDraft },
+      step: "decision" as WizardStepId,
+    };
+  });
+  const [step, setStep] = useState<WizardStepId>(initial.step);
+  const [draft, setDraft] = useState<InterviewDraft>(initial.draft);
   const [error, setError] = useState<string | null>(null);
-  const [snapshot, setSnapshot] = useState<RecommendationSnapshot | null>(null);
+  const [snapshot, setSnapshot] = useState<RecommendationSnapshot | null>(
+    initial.snapshot
+  );
   const fieldsetRef = useRef<HTMLFieldSetElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const ackRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (snapshot) {
+      saveRecommendationSnapshot(snapshot);
+      return;
+    }
+    clearRecommendationSnapshot();
+  }, [snapshot]);
 
   function patchDraft(patch: Partial<InterviewDraft>) {
     setDraft((current) => ({ ...current, ...patch }));
@@ -302,6 +344,12 @@ export function useInterviewWizard() {
     return null;
   }
 
+  function clearSavedRecommendation() {
+    setSnapshot(null);
+    setError(null);
+    moveTo("review");
+  }
+
   const isQuestionStep = step.startsWith("q");
   const question = isQuestionStep
     ? {
@@ -334,12 +382,14 @@ export function useInterviewWizard() {
     questionTotal: WIZARD_QUESTION_TOTAL,
     minutesLeft: question?.minutesLeft,
     decisionView,
+    hasSnapshot: snapshot !== null,
     evaluatorStatus: snapshot?.evaluatorStatus ?? DEFAULT_EVALUATOR_STATUS,
     evaluatorName: snapshot?.evaluatorName ?? "",
     evaluatorReason: snapshot?.evaluatorReason ?? "",
     setEvaluatorName,
     setEvaluatorReason,
     recordEvaluatorDecision,
+    clearSavedRecommendation,
     goPrevious,
     goNext,
     goToStep,

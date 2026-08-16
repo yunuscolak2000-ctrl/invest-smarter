@@ -5,6 +5,8 @@
  * They must not change posture, confidence, or conditions.
  * Do not pass evaluator status into evaluateDecisionV01.
  * The card must present snapshot.frozenDraft, not a later live draft.
+ * localStorage restore uses parseStoredRecommendationSnapshot; invalid
+ * payloads must return null and never crash.
  *
  * Later, with Vitest:
  *   import { verifyDecisionRulesV01 } from "./decisionRulesV01.qa";
@@ -18,6 +20,10 @@ import {
   createRecommendationSnapshot,
   evaluatorReasonError,
 } from "./createRecommendationSnapshot";
+import {
+  parseStoredRecommendationSnapshot,
+  serializeRecommendationSnapshot,
+} from "./recommendationSnapshotStorage";
 import {
   FIXTURE_AVERAGE,
   FIXTURE_BANK_HYPOTHESIS,
@@ -458,11 +464,75 @@ function snapshotChecks(): QaCheck[] {
   ];
 }
 
+function persistenceChecks(): QaCheck[] {
+  const snapshot = createRecommendationSnapshot(FIXTURE_STRONG);
+  if (!snapshot) {
+    return [
+      check("persistence", false, "strong fixture must produce a snapshot to persist"),
+    ];
+  }
+
+  const named: typeof snapshot = {
+    ...snapshot,
+    evaluatorStatus: "amended",
+    evaluatorName: "Investment Desk",
+    evaluatorReason: "Need offtake paper",
+  };
+  const restored = parseStoredRecommendationSnapshot(
+    serializeRecommendationSnapshot(named)
+  );
+
+  return [
+    check(
+      "persistence",
+      restored !== null && restored.id === named.id,
+      "refresh must restore the same snapshot id"
+    ),
+    check(
+      "persistence",
+      restored?.evaluatorStatus === "amended" &&
+        restored.evaluatorName === "Investment Desk" &&
+        restored.evaluatorReason === "Need offtake paper",
+      "evaluator status, name, and reason must survive restore"
+    ),
+    check(
+      "persistence",
+      restored !== null &&
+        JSON.stringify(restored.decisionObject) ===
+          JSON.stringify(named.decisionObject),
+      "restored decision object must match the frozen snapshot"
+    ),
+    check(
+      "persistence",
+      parseStoredRecommendationSnapshot("not-json") === null,
+      "invalid JSON must not restore"
+    ),
+    check(
+      "persistence",
+      parseStoredRecommendationSnapshot(
+        JSON.stringify({ schema: "other.v0", snapshot: named })
+      ) === null,
+      "incompatible schema must not restore"
+    ),
+    check(
+      "persistence",
+      parseStoredRecommendationSnapshot(
+        JSON.stringify({
+          schema: "invest-smarter.recommendationSnapshot.v0.1",
+          snapshot: { ...named, evaluatorStatus: "signed" },
+        })
+      ) === null,
+      "missing or invalid required fields must not restore"
+    ),
+  ];
+}
+
 export function verifyDecisionRulesV01(): QaReport {
   const checks = [
     ...CASES.flatMap(runCase),
     ...evaluatorOverlayChecks(),
     ...snapshotChecks(),
+    ...persistenceChecks(),
   ];
   const failed = checks.filter((item) => !item.ok).length;
   return {
