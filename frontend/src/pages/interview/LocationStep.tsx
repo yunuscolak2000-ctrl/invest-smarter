@@ -2,8 +2,10 @@ import type { Ref } from "react";
 import { AssistantPrompt } from "../../components/wizard/AssistantPrompt";
 import { SelectCardGroup } from "../../components/wizard/SelectCard";
 import { TextField } from "../../components/wizard/TextField";
+import { useCopy } from "../../hooks/useLanguage";
+import { labeledOptions } from "../../lib/i18n";
 import { getCountry } from "../../mocks/countries";
-import { LOCATION_SPECIFICITY_OPTIONS, WIZARD_COPY } from "../../mocks/interview";
+import { LOCATION_SPECIFICITY_OPTIONS } from "../../mocks/interview";
 import type { InterviewDraft, LocationSpecificity } from "../../types/interview";
 
 type LocationStepProps = {
@@ -15,10 +17,6 @@ type LocationStepProps = {
   inputRef: Ref<HTMLInputElement>;
 };
 
-function locationMessage(countryName: string): string {
-  return `How specific is the location in ${countryName}? City or region helps; ‘not decided’ is fine at this stage.`;
-}
-
 export function LocationStep({
   draft,
   onSpecificityChange,
@@ -27,7 +25,9 @@ export function LocationStep({
   fieldsetRef,
   inputRef,
 }: LocationStepProps) {
-  const countryName = getCountry(draft.countryCode)?.name ?? "the selected country";
+  const copy = useCopy();
+  const countryName =
+    getCountry(draft.countryCode)?.name ?? copy.q5.countryFallback;
   const showTextField =
     draft.locationSpecificity === "city_known" ||
     draft.locationSpecificity === "region_known";
@@ -38,15 +38,18 @@ export function LocationStep({
   return (
     <section className="space-y-6">
       <AssistantPrompt
-        title={WIZARD_COPY.q5.title}
-        message={locationMessage(countryName)}
+        title={copy.q5.title}
+        message={copy.q5.message(countryName)}
       />
 
       <SelectCardGroup
         ref={fieldsetRef}
         name="location-specificity"
         value={draft.locationSpecificity}
-        options={LOCATION_SPECIFICITY_OPTIONS}
+        options={labeledOptions(
+          LOCATION_SPECIFICITY_OPTIONS,
+          copy.options.locationSpecificity
+        )}
         onChange={(next) => onSpecificityChange(next as LocationSpecificity)}
         error={selectionError}
       />
@@ -55,16 +58,14 @@ export function LocationStep({
         <TextField
           ref={inputRef}
           id="location-text"
-          label={isCity ? WIZARD_COPY.q5.cityLabel : WIZARD_COPY.q5.regionLabel}
+          label={isCity ? copy.q5.cityLabel : copy.q5.regionLabel}
           value={draft.locationText}
           onChange={onLocationTextChange}
           placeholder={
-            isCity
-              ? WIZARD_COPY.q5.cityPlaceholder
-              : WIZARD_COPY.q5.regionPlaceholder
+            isCity ? copy.q5.cityPlaceholder : copy.q5.regionPlaceholder
           }
           maxLength={60}
-          helper="2–60 characters."
+          helper={copy.q5.helper}
           error={textError}
         />
       ) : null}

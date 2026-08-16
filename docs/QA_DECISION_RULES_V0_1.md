@@ -69,6 +69,8 @@ Q9 and Q10 keep the same stored enums. Labels and advisor copy follow `projectCo
 - Public proceed posture sentence does not say “commission a full study.” Development-finance posture says this is not clearance to enter appraisal, approve support, or commit funding.
 - Empty-condition fallback is context-aware and only appears when no offtake/site/scale/geo condition is listed.
 - Review group title for Q9–Q11 follows Project Context (`Commercial and site` vs `Use, evidence, and site` vs `Use, evidence, and support readiness`). Layout is unchanged.
+- Language defaults to English. Selecting Türkçe persists under `invest-smarter.language.v0.1` and does not clear the draft or snapshot, or change `rules.v0.1`.
+- The same snapshot can be viewed in EN or TR. Stored enum values stay English (`public_project`, `b2b_contract`, …).
 
 **B. Call the helper** from a future test file or a throwaway console:
 

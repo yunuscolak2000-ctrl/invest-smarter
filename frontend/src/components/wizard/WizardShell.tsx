@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { LanguageSelector } from "../LanguageSelector";
 import { WizardProgress } from "./WizardProgress";
 
 type WizardShellProps = {
@@ -8,6 +9,8 @@ type WizardShellProps = {
   questionTotal?: number;
   minutesLeft?: number;
   workingTitle?: string;
+  questionLabel?: string;
+  minutesLabel?: string;
 };
 
 export function WizardShell({
@@ -16,7 +19,9 @@ export function WizardShell({
   questionNumber,
   questionTotal,
   minutesLeft,
-  workingTitle = "New opportunity",
+  workingTitle,
+  questionLabel,
+  minutesLabel,
 }: WizardShellProps) {
   const showProgress =
     questionNumber !== undefined &&
@@ -26,11 +31,16 @@ export function WizardShell({
   return (
     <div className="flex min-h-screen flex-col bg-slate-950">
       <header className="border-b border-slate-800 px-4 py-4 sm:px-6">
-        <div className="mx-auto flex w-full max-w-2xl items-baseline justify-between gap-4">
+        <div className="mx-auto flex w-full max-w-2xl items-center justify-between gap-4">
           <p className="text-sm font-medium uppercase tracking-widest text-emerald-400">
             Invest Smarter
           </p>
-          <p className="truncate text-sm text-slate-400">{workingTitle}</p>
+          <div className="flex min-w-0 items-center gap-3">
+            <p className="hidden truncate text-sm text-slate-400 sm:block">
+              {workingTitle}
+            </p>
+            <LanguageSelector />
+          </div>
         </div>
       </header>
 
@@ -41,6 +51,8 @@ export function WizardShell({
               current={questionNumber}
               total={questionTotal}
               minutesLeft={minutesLeft}
+              questionLabel={questionLabel}
+              minutesLabel={minutesLabel}
             />
           </div>
         ) : null}

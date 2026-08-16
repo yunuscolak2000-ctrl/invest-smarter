@@ -3,8 +3,9 @@ import { AssistantPrompt } from "../../components/wizard/AssistantPrompt";
 import { Chip } from "../../components/wizard/Chip";
 import { SearchSelect } from "../../components/wizard/SearchSelect";
 import { TextField } from "../../components/wizard/TextField";
-import { PINNED_SECTORS, SECTOR_TAXONOMY, WIZARD_COPY } from "../../mocks/interview";
+import { useCopy } from "../../hooks/useLanguage";
 import { isOtherSector } from "../../lib/interviewValidation";
+import { PINNED_SECTORS, SECTOR_TAXONOMY } from "../../mocks/interview";
 import type { InterviewDraft, SectorOption } from "../../types/interview";
 
 type SectorStepProps = {
@@ -22,17 +23,26 @@ export function SectorStep({
   error,
   controlRef,
 }: SectorStepProps) {
+  const copy = useCopy();
   const showOtherField = isOtherSector(draft.sectorCode);
+  const sectors = SECTOR_TAXONOMY.map((sector) => ({
+    ...sector,
+    label: copy.sectors[sector.code] ?? sector.label,
+  }));
+  const pinned = PINNED_SECTORS.map((sector) => ({
+    ...sector,
+    label: copy.sectors[sector.code] ?? sector.label,
+  }));
   const selectedLabel = showOtherField
-    ? draft.sectorOther.trim() || "Other"
-    : draft.sectorLabel;
+    ? draft.sectorOther.trim() || copy.chrome.other
+    : copy.sectors[draft.sectorCode ?? ""] || draft.sectorLabel;
 
   return (
     <section className="space-y-6">
-      <AssistantPrompt title={WIZARD_COPY.q2.title} message={WIZARD_COPY.q2.message} />
+      <AssistantPrompt title={copy.q2.title} message={copy.q2.message} />
 
       <div className="flex flex-wrap gap-2">
-        {PINNED_SECTORS.map((sector) => (
+        {pinned.map((sector) => (
           <Chip
             key={sector.code}
             label={sector.label}
@@ -45,17 +55,18 @@ export function SectorStep({
       <SearchSelect
         ref={showOtherField ? undefined : controlRef}
         id="sector-search"
-        label="All sectors"
-        options={SECTOR_TAXONOMY}
+        label={copy.q2.allSectors}
+        options={sectors}
         value={draft.sectorCode}
         onChange={onSelect}
         error={showOtherField ? null : error}
-        placeholder="Search by name or code"
+        placeholder={copy.q2.searchPlaceholder}
       />
 
       {selectedLabel && !showOtherField ? (
         <p className="text-sm text-slate-400">
-          Selected: <span className="font-medium text-slate-200">{selectedLabel}</span>
+          {copy.chrome.selected}:{" "}
+          <span className="font-medium text-slate-200">{selectedLabel}</span>
         </p>
       ) : null}
 
@@ -63,12 +74,12 @@ export function SectorStep({
         <TextField
           ref={controlRef}
           id="sector-other"
-          label="Describe the sector"
+          label={copy.q2.describeSector}
           value={draft.sectorOther}
           onChange={onOtherChange}
-          placeholder="e.g. Waste-to-energy"
+          placeholder={copy.q2.sectorOtherPlaceholder}
           maxLength={40}
-          helper="3–40 characters. Letters, numbers, spaces, and hyphens only."
+          helper={copy.q2.sectorOtherHelper}
           error={error}
         />
       ) : null}

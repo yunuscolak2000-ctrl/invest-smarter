@@ -4,7 +4,11 @@
  */
 
 import { evaluateDecisionV01 } from "./decisionRulesV01";
-import { WIZARD_COPY } from "../mocks/interview";
+import {
+  DEFAULT_LANGUAGE,
+  getCopy,
+  type Language,
+} from "./i18n";
 import {
   DEFAULT_EVALUATOR_STATUS,
   type EvaluatorDecisionStatus,
@@ -38,9 +42,10 @@ export type EvaluatorDecisionErrors = {
 export function evaluatorDecisionErrors(
   status: Exclude<EvaluatorDecisionStatus, "not_accepted">,
   name: string,
-  reason: string
+  reason: string,
+  language: Language = DEFAULT_LANGUAGE
 ): EvaluatorDecisionErrors {
-  const copy = WIZARD_COPY.decision.evaluator;
+  const copy = getCopy(language).decision.evaluator;
   const nameError = name.trim() ? null : copy.nameRequiredError;
   let reasonError: string | null = null;
   if (status === "amended" && !reason.trim()) {

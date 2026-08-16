@@ -1,7 +1,9 @@
 import type { Ref } from "react";
 import { AssistantPrompt } from "../../components/wizard/AssistantPrompt";
 import { SelectCardGroup } from "../../components/wizard/SelectCard";
-import { SITE_CONTROL_OPTIONS, WIZARD_COPY } from "../../mocks/interview";
+import { useCopy } from "../../hooks/useLanguage";
+import { labeledOptions } from "../../lib/i18n";
+import { SITE_CONTROL_OPTIONS } from "../../mocks/interview";
 import type { OpportunityType, SiteControl } from "../../types/interview";
 
 type SiteControlStepProps = {
@@ -19,25 +21,26 @@ export function SiteControlStep({
   error,
   controlRef,
 }: SiteControlStepProps) {
+  const copy = useCopy();
   const message =
     opportunityType === "asset_light"
-      ? WIZARD_COPY.q11.assetLightMessage
-      : WIZARD_COPY.q11.message;
+      ? copy.q11.assetLightMessage
+      : copy.q11.message;
 
   return (
     <section className="space-y-6">
-      <AssistantPrompt title={WIZARD_COPY.q11.title} message={message} />
+      <AssistantPrompt title={copy.q11.title} message={message} />
       <SelectCardGroup
         ref={controlRef}
         name="site-control"
         value={value}
-        options={SITE_CONTROL_OPTIONS}
+        options={labeledOptions(SITE_CONTROL_OPTIONS, copy.options.siteControl)}
         onChange={(next) => onChange(next as SiteControl)}
         error={error}
       />
       {value === "searching" ? (
         <p className="text-sm leading-relaxed text-slate-400">
-          {WIZARD_COPY.q11.searchingConfirm}
+          {copy.q11.searchingConfirm}
         </p>
       ) : null}
     </section>

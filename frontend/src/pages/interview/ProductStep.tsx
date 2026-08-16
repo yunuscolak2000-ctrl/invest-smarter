@@ -2,7 +2,7 @@ import type { Ref } from "react";
 import { AssistantPrompt } from "../../components/wizard/AssistantPrompt";
 import { Chip } from "../../components/wizard/Chip";
 import { TextField } from "../../components/wizard/TextField";
-import { PRODUCT_CHIPS_BY_ROOT, WIZARD_COPY } from "../../mocks/interview";
+import { useCopy } from "../../hooks/useLanguage";
 import type { InterviewDraft } from "../../types/interview";
 
 type ProductStepProps = {
@@ -12,32 +12,31 @@ type ProductStepProps = {
   controlRef: Ref<HTMLInputElement>;
 };
 
-function chipsForSector(code: string | null): string[] {
-  if (!code || code === "other") return [];
-  const root = code.split(".")[0];
-  return PRODUCT_CHIPS_BY_ROOT[root] ?? [];
-}
-
 export function ProductStep({
   draft,
   onChange,
   error,
   controlRef,
 }: ProductStepProps) {
-  const chips = chipsForSector(draft.sectorCode);
+  const copy = useCopy();
+  const root = draft.sectorCode?.split(".")[0] ?? "";
+  const chips =
+    !draft.sectorCode || draft.sectorCode === "other"
+      ? []
+      : (copy.productChips[root] ?? []);
 
   return (
     <section className="space-y-6">
-      <AssistantPrompt title={WIZARD_COPY.q3.title} message={WIZARD_COPY.q3.message} />
+      <AssistantPrompt title={copy.q3.title} message={copy.q3.message} />
 
       {chips.length > 0 ? (
         <div className="flex flex-wrap gap-2">
           {chips.map((chip) => (
             <Chip
-              key={chip}
-              label={chip}
-              selected={draft.productSummary === chip}
-              onClick={() => onChange(chip)}
+              key={chip.value}
+              label={chip.label}
+              selected={draft.productSummary === chip.value}
+              onClick={() => onChange(chip.value)}
             />
           ))}
         </div>
@@ -46,12 +45,12 @@ export function ProductStep({
       <TextField
         ref={controlRef}
         id="product-summary"
-        label="Product or output"
+        label={copy.q3.fieldLabel}
         value={draft.productSummary}
         onChange={onChange}
-        placeholder="e.g. 50 MW solar PV plant"
+        placeholder={copy.q3.placeholder}
         maxLength={80}
-        helper="8–80 characters. Chips fill this field — you can edit them."
+        helper={copy.q3.helper}
         error={error}
       />
     </section>

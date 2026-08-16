@@ -1,5 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { presentDecisionCard } from "../lib/presentDecisionCard";
+import { sectorDisplayName } from "../lib/interviewLabels";
+import { useLanguage } from "./useLanguage";
 import {
   createRecommendationSnapshot,
   evaluatorDecisionErrors,
@@ -32,8 +34,9 @@ import {
   validateSector,
   validateSiteControl,
 } from "../lib/interviewValidation";
+import { getCopy, type Language } from "../lib/i18n";
 import { getCountry } from "../mocks/countries";
-import { MINUTES_LEFT_BY_STEP, WIZARD_COPY } from "../mocks/interview";
+import { MINUTES_LEFT_BY_STEP, SECTOR_TAXONOMY } from "../mocks/interview";
 import {
   DEFAULT_EVALUATOR_STATUS,
   type EvaluatorDecisionStatus,
@@ -88,16 +91,16 @@ const CARD_STEPS: WizardStepId[] = [
   "q12",
 ];
 
-function workingTitleFrom(draft: InterviewDraft): string {
+function workingTitleFrom(draft: InterviewDraft, language: Language): string {
+  const copy = getCopy(language);
   const country = getCountry(draft.countryCode);
-  if (!country) return "New opportunity";
+  if (!country) return copy.chrome.newOpportunity;
 
-  const sector =
-    draft.sectorCode === "other"
-      ? draft.sectorOther.trim()
-      : (draft.sectorLabel ?? "").trim();
-
-  if (!sector) return "New opportunity";
+  const sector = sectorDisplayName(draft, language);
+  if (!draft.sectorCode && !draft.sectorOther.trim() && !draft.sectorLabel) {
+    return copy.chrome.newOpportunity;
+  }
+  if (!sector) return copy.chrome.newOpportunity;
   return `${sector} — ${country.name}`;
 }
 
@@ -111,6 +114,7 @@ type WizardOptions = {
 
 export function useInterviewWizard(options: WizardOptions = {}) {
   const resumeSaved = options.resumeSaved === true;
+  const { language, copy } = useLanguage();
   const [initial] = useState(() => {
     if (!resumeSaved) {
       clearRecommendationSnapshot();
@@ -200,6 +204,18 @@ export function useInterviewWizard(options: WizardOptions = {}) {
     setStep("projectContext");
   }, [step, draft.projectContext]);
 
+  useEffect(() => {
+    if (!error) return;
+    if (visibleStep === "review") {
+      const invalid = validateInterviewDraft(draft, copy.validation);
+      setError(invalid ? copy.review.incompleteError : null);
+      return;
+    }
+    setError(validateStep(visibleStep, draft));
+    // Language change only — do not loop on error text.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [language]);
+
   function patchDraft(patch: Partial<InterviewDraft>) {
     setDraft((current) => ({ ...current, ...patch }));
     setError(null);
@@ -207,19 +223,26 @@ export function useInterviewWizard(options: WizardOptions = {}) {
   }
 
   function validateStep(current: WizardStepId, currentDraft: InterviewDraft) {
-    if (current === "projectContext") return validateProjectContext(currentDraft);
-    if (current === "q1") return validateOpportunityType(currentDraft);
-    if (current === "q2") return validateSector(currentDraft);
-    if (current === "q3") return validateProduct(currentDraft);
-    if (current === "q4") return validateCountry(currentDraft);
-    if (current === "q5") return validateLocation(currentDraft);
-    if (current === "q6") return validateDevelopmentStage(currentDraft);
-    if (current === "q7") return validateCapitalScale(currentDraft);
-    if (current === "q8") return validateEvaluationContext(currentDraft);
-    if (current === "q9") return validateBuyerType(currentDraft);
-    if (current === "q10") return validateDemandCertainty(currentDraft);
-    if (current === "q11") return validateSiteControl(currentDraft);
-    if (current === "q12") return validateDecisionNeeded(currentDraft);
+    const messages = copy.validation;
+    if (current === "projectContext") {
+      return validateProjectContext(currentDraft, messages);
+    }
+    if (current === "q1") return validateOpportunityType(currentDraft, messages);
+    if (current === "q2") return validateSector(currentDraft, messages);
+    if (current === "q3") return validateProduct(currentDraft, messages);
+    if (current === "q4") return validateCountry(currentDraft, messages);
+    if (current === "q5") return validateLocation(currentDraft, messages);
+    if (current === "q6") {
+      return validateDevelopmentStage(currentDraft, messages);
+    }
+    if (current === "q7") return validateCapitalScale(currentDraft, messages);
+    if (current === "q8") {
+      return validateEvaluationContext(currentDraft, messages);
+    }
+    if (current === "q9") return validateBuyerType(currentDraft, messages);
+    if (current === "q10") return validateDemandCertainty(currentDraft, messages);
+    if (current === "q11") return validateSiteControl(currentDraft, messages);
+    if (current === "q12") return validateDecisionNeeded(currentDraft, messages);
     return null;
   }
 
@@ -291,7 +314,7 @@ export function useInterviewWizard(options: WizardOptions = {}) {
     }
 
     if (visibleStep === "projectContext") {
-      const message = validateProjectContext(draft);
+      const message = validateProjectContext(draft, copy.validation);
       if (message) {
         setError(message);
         focusErrorControl();
@@ -313,15 +336,15 @@ export function useInterviewWizard(options: WizardOptions = {}) {
   }
 
   function seeRecommendation() {
-    const invalid = validateInterviewDraft(draft);
+    const invalid = validateInterviewDraft(draft, copy.validation);
     if (invalid) {
-      setError(WIZARD_COPY.review.incompleteError);
+      setError(copy.review.incompleteError);
       return;
     }
 
     const next = createRecommendationSnapshot(draft);
     if (!next) {
-      setError(WIZARD_COPY.review.incompleteError);
+      setError(copy.review.incompleteError);
       return;
     }
 
@@ -338,9 +361,10 @@ export function useInterviewWizard(options: WizardOptions = {}) {
   }
 
   function setSector(option: SectorOption) {
+    const canonical = SECTOR_TAXONOMY.find((sector) => sector.code === option.code);
     patchDraft({
       sectorCode: option.code,
-      sectorLabel: option.code === "other" ? null : option.label,
+      sectorLabel: option.code === "other" ? null : (canonical?.label ?? option.label),
       sectorOther: option.code === "other" ? draft.sectorOther : "",
     });
   }
@@ -425,7 +449,7 @@ export function useInterviewWizard(options: WizardOptions = {}) {
     name: string,
     reason: string
   ): EvaluatorDecisionErrors {
-    const errors = evaluatorDecisionErrors(status, name, reason);
+    const errors = evaluatorDecisionErrors(status, name, reason, language);
     if (hasEvaluatorDecisionErrors(errors)) return errors;
     setSnapshot((current) =>
       current ? { ...current, evaluatorStatus: status } : current
@@ -453,7 +477,8 @@ export function useInterviewWizard(options: WizardOptions = {}) {
       ? presentDecisionCard(
           snapshot.decisionObject,
           snapshot.frozenDraft,
-          snapshot.evaluatorStatus
+          snapshot.evaluatorStatus,
+          language
         )
       : null;
 
@@ -466,8 +491,8 @@ export function useInterviewWizard(options: WizardOptions = {}) {
     ackRef,
     workingTitle:
       snapshot && visibleStep === "decision"
-        ? workingTitleFrom(snapshot.frozenDraft)
-        : workingTitleFrom(draft),
+        ? workingTitleFrom(snapshot.frozenDraft, language)
+        : workingTitleFrom(draft, language),
     questionNumber: question?.number,
     questionTotal: WIZARD_QUESTION_TOTAL,
     minutesLeft: question?.minutesLeft,

@@ -1,10 +1,10 @@
 import { AssistantPrompt } from "../../components/wizard/AssistantPrompt";
 import { FieldError } from "../../components/wizard/FieldError";
+import { useLanguage } from "../../hooks/useLanguage";
 import {
   reviewConfidencePreview,
   reviewGroups,
 } from "../../lib/interviewLabels";
-import { WIZARD_COPY } from "../../mocks/interview";
 import { getCountry } from "../../mocks/countries";
 import type { InterviewDraft, WizardStepId } from "../../types/interview";
 
@@ -15,19 +15,17 @@ type ReviewScreenProps = {
 };
 
 export function ReviewScreen({ draft, error, onEdit }: ReviewScreenProps) {
-  const groups = reviewGroups(draft);
-  const preview = reviewConfidencePreview(draft);
+  const { language, copy } = useLanguage();
+  const groups = reviewGroups(draft, language);
+  const preview = reviewConfidencePreview(draft, language);
   const restricted = getCountry(draft.countryCode)?.risk_tier === "restricted";
 
   return (
     <section className="space-y-8">
       <div className="space-y-2">
-        <AssistantPrompt
-          title={WIZARD_COPY.review.title}
-          message={WIZARD_COPY.review.message}
-        />
+        <AssistantPrompt title={copy.review.title} message={copy.review.message} />
         <p className="text-xs leading-relaxed text-slate-600">
-          {WIZARD_COPY.review.draftPersisted}
+          {copy.review.draftPersisted}
         </p>
       </div>
 
@@ -45,7 +43,7 @@ export function ReviewScreen({ draft, error, onEdit }: ReviewScreenProps) {
                   type="button"
                   onClick={() => onEdit(row.step)}
                   className="flex w-full items-center justify-between gap-4 rounded-2xl border border-slate-800 bg-slate-900 px-4 py-3.5 text-left transition-colors hover:border-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60"
-                  aria-label={`Edit ${row.label}`}
+                  aria-label={`${copy.chrome.edit} ${row.label}`}
                 >
                   <span className="min-w-0">
                     <span className="block text-xs font-medium uppercase tracking-wide text-slate-500">
@@ -55,7 +53,9 @@ export function ReviewScreen({ draft, error, onEdit }: ReviewScreenProps) {
                       {row.value}
                     </span>
                   </span>
-                  <span className="shrink-0 text-sm text-slate-500">Edit</span>
+                  <span className="shrink-0 text-sm text-slate-500">
+                    {copy.chrome.edit}
+                  </span>
                 </button>
               </li>
             ))}
@@ -64,13 +64,13 @@ export function ReviewScreen({ draft, error, onEdit }: ReviewScreenProps) {
       ))}
 
       <div className="space-y-2 rounded-2xl border border-slate-800 bg-slate-900 px-4 py-4">
-          <h3 className="text-xs font-medium uppercase tracking-widest text-slate-500">
-          Confidence preview · {preview.band}
+        <h3 className="text-xs font-medium uppercase tracking-widest text-slate-500">
+          {copy.review.confidencePreview(preview.band)}
         </h3>
         <p className="text-sm leading-relaxed text-slate-300">{preview.message}</p>
         {restricted ? (
           <p className="text-sm leading-relaxed text-slate-400">
-            This geography requires review before any recommendation is published.
+            {copy.review.restrictedGeo}
           </p>
         ) : null}
       </div>

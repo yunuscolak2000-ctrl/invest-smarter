@@ -2,7 +2,7 @@ import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { WizardFooter } from "../components/wizard/WizardFooter";
 import { WizardShell } from "../components/wizard/WizardShell";
 import { useInterviewWizard } from "../hooks/useInterviewWizard";
-import { WIZARD_COPY } from "../mocks/interview";
+import { useCopy } from "../hooks/useLanguage";
 import { isInterviewLocationState } from "../types/interview";
 import { BuyerTypeStep } from "./interview/BuyerTypeStep";
 import { CountryStep } from "./interview/CountryStep";
@@ -26,6 +26,7 @@ export default function InterviewPage() {
   const navigate = useNavigate();
   const fromWelcome = isInterviewLocationState(location.state);
   const wizard = useInterviewWizard({ resumeSaved: !fromWelcome });
+  const copy = useCopy();
 
   if (!fromWelcome && !wizard.hasSnapshot && !wizard.hasResumableDraft) {
     return <Navigate to="/" replace />;
@@ -40,7 +41,7 @@ export default function InterviewPage() {
     <WizardFooter
       hideNext
       showPrevious
-      previousLabel={WIZARD_COPY.decision.editLabel}
+      previousLabel={copy.decision.editLabel}
       onPrevious={wizard.goPrevious}
     />
   ) : (
@@ -54,14 +55,15 @@ export default function InterviewPage() {
       }
       nextLabel={
         isFraming
-          ? "Start interview"
+          ? copy.chrome.startInterview
           : isReview
-            ? WIZARD_COPY.review.nextLabel
-            : "Next"
+            ? copy.review.nextLabel
+            : copy.chrome.next
       }
       showPrevious={!isFraming}
       onPrevious={wizard.goPrevious}
-      secondaryLabel={isFraming ? "Cancel" : undefined}
+      previousLabel={copy.chrome.previous}
+      secondaryLabel={isFraming ? copy.chrome.cancel : undefined}
       onSecondary={isFraming ? () => navigate("/") : undefined}
     />
   );
@@ -72,6 +74,19 @@ export default function InterviewPage() {
       questionTotal={wizard.questionTotal}
       minutesLeft={wizard.minutesLeft}
       workingTitle={wizard.workingTitle}
+      questionLabel={
+        wizard.questionNumber !== undefined
+          ? copy.chrome.questionOf(
+              wizard.questionNumber,
+              wizard.questionTotal
+            )
+          : undefined
+      }
+      minutesLabel={
+        wizard.minutesLeft !== undefined
+          ? copy.chrome.minutesLeft(wizard.minutesLeft)
+          : undefined
+      }
       footer={footer}
     >
       {wizard.step === "framing" ? <FramingScreen /> : null}
@@ -225,7 +240,7 @@ export default function InterviewPage() {
             if (!fromWelcome) {
               navigate(".", {
                 replace: true,
-                state: { investmentIdea: "New investment opportunity" },
+                state: { investmentIdea: copy.welcome.bootstrapIdea },
               });
             }
           }}

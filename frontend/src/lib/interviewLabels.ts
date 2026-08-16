@@ -1,13 +1,11 @@
 import { getCountry } from "../mocks/countries";
 import {
-  CAPEX_RANGE_BASE,
   DECISION_NEEDED_OPTIONS,
   DEVELOPMENT_STAGE_OPTIONS,
   EVALUATION_CONTEXT_OPTIONS,
   LOCATION_SPECIFICITY_OPTIONS,
   OPPORTUNITY_TYPE_OPTIONS,
   PROJECT_CONTEXT_OPTIONS,
-  SECTOR_TAXONOMY,
   SITE_CONTROL_OPTIONS,
 } from "../mocks/interview";
 import {
@@ -17,6 +15,12 @@ import {
   q10Prompt,
   reviewSiteGroupTitle,
 } from "./contextAwareCopy";
+import {
+  DEFAULT_LANGUAGE,
+  getCopy,
+  labeledOptions,
+  type Language,
+} from "./i18n";
 import type {
   CapexRange,
   InterviewDraft,
@@ -32,25 +36,42 @@ function optionLabel<T extends string>(
   return options.find((option) => option.value === value)?.label ?? value;
 }
 
-export function sectorDisplayName(draft: InterviewDraft): string {
-  if (draft.sectorCode === "other") return draft.sectorOther.trim() || "Other";
-  return (draft.sectorLabel ?? "").trim() || "New opportunity";
+export function sectorDisplayName(
+  draft: InterviewDraft,
+  language: Language = DEFAULT_LANGUAGE
+): string {
+  const copy = getCopy(language);
+  if (draft.sectorCode === "other") {
+    return draft.sectorOther.trim() || copy.chrome.other;
+  }
+  return (
+    copy.sectors[draft.sectorCode ?? ""] ||
+    draft.sectorLabel?.trim() ||
+    copy.chrome.newOpportunity
+  );
 }
 
 export function formatCapitalScale(
   currency: string,
-  range: CapexRange
+  range: CapexRange,
+  language: Language = DEFAULT_LANGUAGE
 ): string {
-  if (range === "not_sure") return "Scale not set";
-  const label =
-    CAPEX_RANGE_BASE.find((option) => option.value === range)?.label ?? range;
+  const copy = getCopy(language);
+  if (range === "not_sure") return copy.review.scaleNotSet;
+  const label = copy.options.capexRange[range]?.label ?? range;
   return `${currency} ${label}`;
 }
 
-export function locationDisplayValue(draft: InterviewDraft): string {
+export function locationDisplayValue(
+  draft: InterviewDraft,
+  language: Language = DEFAULT_LANGUAGE
+): string {
   if (draft.locationSpecificity === "country_only") {
     return optionLabel(
-      LOCATION_SPECIFICITY_OPTIONS,
+      labeledOptions(
+        LOCATION_SPECIFICITY_OPTIONS,
+        getCopy(language).options.locationSpecificity
+      ),
       draft.locationSpecificity
     );
   }
@@ -66,181 +87,235 @@ export type ReviewGroup = {
   }[];
 };
 
-export function reviewGroups(draft: InterviewDraft): ReviewGroup[] {
+export function reviewGroups(
+  draft: InterviewDraft,
+  language: Language = DEFAULT_LANGUAGE
+): ReviewGroup[] {
+  const copy = getCopy(language);
   const country = getCountry(draft.countryCode);
   const currency = draft.currency ?? country?.currency ?? "";
 
   return [
     {
-      title: "Opportunity",
+      title: copy.review.groupOpportunity,
       rows: [
         {
           step: "projectContext",
-          label: "Project context",
-          value: optionLabel(PROJECT_CONTEXT_OPTIONS, draft.projectContext),
+          label: copy.review.rowProjectContext,
+          value: optionLabel(
+            labeledOptions(PROJECT_CONTEXT_OPTIONS, copy.options.projectContext),
+            draft.projectContext
+          ),
         },
         {
           step: "q1",
-          label: "Type of opportunity",
-          value: optionLabel(OPPORTUNITY_TYPE_OPTIONS, draft.opportunityType),
+          label: copy.review.rowOpportunityType,
+          value: optionLabel(
+            labeledOptions(
+              OPPORTUNITY_TYPE_OPTIONS,
+              copy.options.opportunityType
+            ),
+            draft.opportunityType
+          ),
         },
         {
           step: "q2",
-          label: "Sector",
-          value: sectorDisplayName(draft),
+          label: copy.review.rowSector,
+          value: sectorDisplayName(draft, language),
         },
         {
           step: "q3",
-          label: "What it produces",
+          label: copy.review.rowProduct,
           value: draft.productSummary.trim(),
         },
       ],
     },
     {
-      title: "Place",
+      title: copy.review.groupPlace,
       rows: [
         {
           step: "q4",
-          label: "Country",
+          label: copy.review.rowCountry,
           value: country ? `${country.name} (${country.code})` : "",
         },
         {
           step: "q5",
-          label: "Location",
-          value: locationDisplayValue(draft),
+          label: copy.review.rowLocation,
+          value: locationDisplayValue(draft, language),
         },
       ],
     },
     {
-      title: "Scale and stage",
+      title: copy.review.groupScale,
       rows: [
         {
           step: "q6",
-          label: "Development stage",
-          value: optionLabel(DEVELOPMENT_STAGE_OPTIONS, draft.developmentStage),
+          label: copy.review.rowStage,
+          value: optionLabel(
+            labeledOptions(
+              DEVELOPMENT_STAGE_OPTIONS,
+              copy.options.developmentStage
+            ),
+            draft.developmentStage
+          ),
         },
         {
           step: "q7",
-          label: "Currency",
+          label: copy.review.rowCurrency,
           value: currency,
         },
         {
           step: "q7",
-          label: "Capital range",
+          label: copy.review.rowCapital,
           value: draft.capexRange
-            ? formatCapitalScale(currency, draft.capexRange)
+            ? formatCapitalScale(currency, draft.capexRange, language)
             : "",
         },
       ],
     },
     {
-      title: "Context",
+      title: copy.review.groupContext,
       rows: [
         {
           step: "q8",
-          label: "Who is evaluating this",
-          value: optionLabel(EVALUATION_CONTEXT_OPTIONS, draft.evaluationContext),
+          label: copy.review.rowEvaluator,
+          value: optionLabel(
+            labeledOptions(
+              EVALUATION_CONTEXT_OPTIONS,
+              copy.options.evaluationContext
+            ),
+            draft.evaluationContext
+          ),
         },
         {
           step: "q12",
-          label: "Decision needed",
-          value: optionLabel(DECISION_NEEDED_OPTIONS, draft.decisionNeeded),
+          label: copy.review.rowDecisionNeeded,
+          value: optionLabel(
+            labeledOptions(DECISION_NEEDED_OPTIONS, copy.options.decisionNeeded),
+            draft.decisionNeeded
+          ),
         },
       ],
     },
     {
-      title: reviewSiteGroupTitle(draft.projectContext),
+      title: reviewSiteGroupTitle(draft.projectContext, language),
       rows: [
         {
           step: "q9",
-          label: q9Prompt(draft.projectContext).title,
+          label: q9Prompt(draft.projectContext, language).title,
           value: optionLabel(
-            buyerTypeOptions(draft.projectContext),
+            buyerTypeOptions(draft.projectContext, language),
             draft.buyerType
           ),
         },
         {
           step: "q10",
-          label: q10Prompt(draft.projectContext).title,
+          label: q10Prompt(draft.projectContext, language).title,
           value: optionLabel(
-            demandCertaintyOptions(draft.projectContext),
+            demandCertaintyOptions(draft.projectContext, language),
             draft.demandCertainty
           ),
         },
         {
           step: "q11",
-          label: "Site control",
-          value: optionLabel(SITE_CONTROL_OPTIONS, draft.siteControl),
+          label: copy.review.rowSite,
+          value: optionLabel(
+            labeledOptions(SITE_CONTROL_OPTIONS, copy.options.siteControl),
+            draft.siteControl
+          ),
         },
       ],
     },
   ];
 }
 
-export function identitySectorLabel(draft: InterviewDraft): string {
-  if (draft.sectorCode === "other") return "Other";
+export function identitySectorLabel(
+  draft: InterviewDraft,
+  language: Language = DEFAULT_LANGUAGE
+): string {
+  const copy = getCopy(language);
+  if (draft.sectorCode === "other") return copy.chrome.other;
+  if (draft.sectorCode && copy.sectors[draft.sectorCode]) {
+    return copy.sectors[draft.sectorCode];
+  }
   if (draft.sectorLabel?.trim()) return draft.sectorLabel.trim();
-  return (
-    SECTOR_TAXONOMY.find((sector) => sector.code === draft.sectorCode)?.label ??
-    "Other"
-  );
+  return copy.chrome.other;
 }
 
-export function identityTitle(draft: InterviewDraft): string {
+export function identityTitle(
+  draft: InterviewDraft,
+  language: Language = DEFAULT_LANGUAGE
+): string {
   const country = getCountry(draft.countryCode);
-  const sector = identitySectorLabel(draft);
+  const sector = identitySectorLabel(draft, language);
   return country ? `${sector} — ${country.name}` : sector;
 }
 
-export function identityMeta(draft: InterviewDraft): string {
+export function identityMeta(
+  draft: InterviewDraft,
+  language: Language = DEFAULT_LANGUAGE
+): string {
+  const copy = getCopy(language);
   const country = getCountry(draft.countryCode);
   const currency = draft.currency ?? country?.currency ?? "";
-  const project = optionLabel(PROJECT_CONTEXT_OPTIONS, draft.projectContext);
-  const stage = optionLabel(DEVELOPMENT_STAGE_OPTIONS, draft.developmentStage);
+  const project = optionLabel(
+    labeledOptions(PROJECT_CONTEXT_OPTIONS, copy.options.projectContext),
+    draft.projectContext
+  );
+  const stage = optionLabel(
+    labeledOptions(DEVELOPMENT_STAGE_OPTIONS, copy.options.developmentStage),
+    draft.developmentStage
+  );
   const scale = draft.capexRange
-    ? formatCapitalScale(currency, draft.capexRange)
-    : "Scale not set";
+    ? formatCapitalScale(currency, draft.capexRange, language)
+    : copy.review.scaleNotSet;
   const context = optionLabel(
-    EVALUATION_CONTEXT_OPTIONS,
+    labeledOptions(EVALUATION_CONTEXT_OPTIONS, copy.options.evaluationContext),
     draft.evaluationContext
   );
   return [project, stage, scale, context].filter(Boolean).join(" · ");
 }
 
-export function reviewConfidencePreview(draft: InterviewDraft): {
-  band: "High" | "Medium" | "Low";
+export function reviewConfidencePreview(
+  draft: InterviewDraft,
+  language: Language = DEFAULT_LANGUAGE
+): {
+  band: string;
   message: string;
 } {
+  const copy = getCopy(language);
   const open: string[] = [];
-  if (draft.capexRange === "not_sure") open.push("capital scale");
-  if (draft.buyerType === "unknown") open.push("buyer type");
-  if (draft.demandCertainty === "hypothesis") open.push("demand certainty");
-  if (draft.siteControl === "searching") open.push("site control");
-  if (draft.locationSpecificity === "country_only") open.push("location");
-  if (draft.sectorCode === "other") open.push("sector");
+  if (draft.capexRange === "not_sure") open.push(copy.review.openCapital);
+  if (draft.buyerType === "unknown") open.push(copy.review.openBuyer);
+  if (draft.demandCertainty === "hypothesis") open.push(copy.review.openDemand);
+  if (draft.siteControl === "searching") open.push(copy.review.openSite);
+  if (draft.locationSpecificity === "country_only") {
+    open.push(copy.review.openLocation);
+  }
+  if (draft.sectorCode === "other") open.push(copy.review.openSector);
 
   const thinDemandAndSite =
     draft.demandCertainty === "hypothesis" && draft.siteControl === "searching";
 
   if (draft.capexRange === "not_sure" || thinDemandAndSite) {
     return {
-      band: "Low",
+      band: copy.decision.bandLow,
       message:
         open.length > 0
-          ? `Confidence will be low. Still open: ${open.join(", ")}.`
-          : "Confidence will be low. Capital scale is not set.",
+          ? copy.review.confidenceLowOpen(open.join(", "))
+          : copy.review.confidenceLowScale,
     };
   }
 
   if (open.length === 0) {
     return {
-      band: "High",
-      message: "Confidence will be high. Collected answers contain no soft unknowns.",
+      band: copy.decision.bandHigh,
+      message: copy.review.confidenceHigh,
     };
   }
 
   return {
-    band: "Medium",
-    message: `Confidence will be medium. Still open: ${open.join(", ")}.`,
+    band: copy.decision.bandMedium,
+    message: copy.review.confidenceMedium(open.join(", ")),
   };
 }

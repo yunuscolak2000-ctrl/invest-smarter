@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { FieldError } from "../../components/wizard/FieldError";
 import { TextField } from "../../components/wizard/TextField";
-import { WIZARD_COPY } from "../../mocks/interview";
+import { useCopy } from "../../hooks/useLanguage";
 import type { DecisionCardView } from "../../lib/presentDecisionCard";
 import type { EvaluatorDecisionStatus } from "../../types/decision";
 
@@ -22,30 +22,6 @@ type DecisionCardScreenProps = {
   onClearSaved: () => void;
 };
 
-const COPY = WIZARD_COPY.decision.evaluator;
-
-const EVALUATOR_ACTIONS: {
-  status: RecordedStatus;
-  label: string;
-  explanation: string;
-}[] = [
-  {
-    status: "accepted",
-    label: COPY.accept,
-    explanation: COPY.accepted,
-  },
-  {
-    status: "amended",
-    label: COPY.amend,
-    explanation: COPY.amended,
-  },
-  {
-    status: "rejected",
-    label: COPY.reject,
-    explanation: COPY.rejected,
-  },
-];
-
 function SectionLabel({ children }: { children: string }) {
   return (
     <p className="text-xs font-medium uppercase tracking-widest text-slate-500">
@@ -64,11 +40,35 @@ export function DecisionCardScreen({
   onRecordDecision,
   onClearSaved,
 }: DecisionCardScreenProps) {
+  const copy = useCopy();
+  const evaluator = copy.decision.evaluator;
   const headingRef = useRef<HTMLHeadingElement>(null);
   const nameRef = useRef<HTMLInputElement>(null);
   const reasonRef = useRef<HTMLTextAreaElement>(null);
   const [nameError, setNameError] = useState<string | null>(null);
   const [reasonError, setReasonError] = useState<string | null>(null);
+
+  const evaluatorActions: {
+    status: RecordedStatus;
+    label: string;
+    explanation: string;
+  }[] = [
+    {
+      status: "accepted",
+      label: evaluator.accept,
+      explanation: evaluator.accepted,
+    },
+    {
+      status: "amended",
+      label: evaluator.amend,
+      explanation: evaluator.amended,
+    },
+    {
+      status: "rejected",
+      label: evaluator.reject,
+      explanation: evaluator.rejected,
+    },
+  ];
 
   useEffect(() => {
     headingRef.current?.focus();
@@ -82,14 +82,14 @@ export function DecisionCardScreen({
           tabIndex={-1}
           className="text-2xl font-semibold tracking-tight text-white focus:outline-none"
         >
-          {WIZARD_COPY.decision.defect}
+          {copy.decision.defect}
         </h1>
       </section>
     );
   }
 
   const explanation =
-    EVALUATOR_ACTIONS.find((action) => action.status === evaluatorStatus)
+    evaluatorActions.find((action) => action.status === evaluatorStatus)
       ?.explanation ?? null;
   const recordedName = evaluatorName.trim();
   const recordedReason = evaluatorReason.trim();
@@ -131,7 +131,7 @@ export function DecisionCardScreen({
 
   return (
     <article className="space-y-10 pb-[max(7rem,calc(5rem+env(safe-area-inset-bottom)))] sm:pb-24">
-      <header className="space-y-2" aria-label="Opportunity">
+      <header className="space-y-2" aria-label={copy.decision.sectionOpportunity}>
         <p className="text-base font-medium leading-snug text-white">
           {view.title}
         </p>
@@ -141,12 +141,12 @@ export function DecisionCardScreen({
         <p className="text-sm leading-relaxed text-slate-400">{view.meta}</p>
         <p className="text-sm leading-relaxed text-slate-500">{view.status}</p>
         <p className="text-xs leading-relaxed text-slate-600">
-          {WIZARD_COPY.decision.snapshotPersisted}
+          {copy.decision.snapshotPersisted}
         </p>
       </header>
 
-      <section className="space-y-3" aria-label="Decision">
-        <SectionLabel>Decision</SectionLabel>
+      <section className="space-y-3" aria-label={copy.decision.sectionDecision}>
+        <SectionLabel>{copy.decision.sectionDecision}</SectionLabel>
         <h1
           id="decision-heading"
           ref={headingRef}
@@ -170,8 +170,8 @@ export function DecisionCardScreen({
         ) : null}
       </section>
 
-      <section className="space-y-3" aria-label="Confidence">
-        <SectionLabel>Confidence</SectionLabel>
+      <section className="space-y-3" aria-label={copy.decision.sectionConfidence}>
+        <SectionLabel>{copy.decision.sectionConfidence}</SectionLabel>
         <p className="text-base font-medium text-white">{view.confidenceLine}</p>
         <p className="text-sm leading-relaxed text-slate-400">
           {view.confidenceDrivers[0]}
@@ -181,8 +181,8 @@ export function DecisionCardScreen({
         </p>
       </section>
 
-      <section className="space-y-3" aria-label="Conditions">
-        <SectionLabel>Conditions</SectionLabel>
+      <section className="space-y-3" aria-label={copy.decision.sectionConditions}>
+        <SectionLabel>{copy.decision.sectionConditions}</SectionLabel>
         <p className="text-sm leading-relaxed text-slate-400">
           {view.conditionsIntro}
         </p>
@@ -193,8 +193,8 @@ export function DecisionCardScreen({
         </ol>
       </section>
 
-      <section className="space-y-3" aria-label="Why this decision">
-        <SectionLabel>Why this decision</SectionLabel>
+      <section className="space-y-3" aria-label={copy.decision.sectionWhy}>
+        <SectionLabel>{copy.decision.sectionWhy}</SectionLabel>
         <ul className="list-disc space-y-3 pl-5 text-sm leading-relaxed text-slate-300">
           {view.why.map((item) => (
             <li key={item}>{item}</li>
@@ -202,8 +202,8 @@ export function DecisionCardScreen({
         </ul>
       </section>
 
-      <section className="space-y-3" aria-label="What should happen next">
-        <SectionLabel>What should happen next</SectionLabel>
+      <section className="space-y-3" aria-label={copy.decision.sectionNext}>
+        <SectionLabel>{copy.decision.sectionNext}</SectionLabel>
         <ul className="list-disc space-y-3 pl-5 text-sm leading-relaxed text-slate-300">
           {view.next.map((item) => (
             <li key={item}>{item}</li>
@@ -211,31 +211,33 @@ export function DecisionCardScreen({
         </ul>
       </section>
 
-      <section className="space-y-6" aria-label="Evaluator decision">
+      <section className="space-y-6" aria-label={evaluator.sectionLabel}>
         <div className="space-y-2">
-          <SectionLabel>{COPY.sectionLabel}</SectionLabel>
-          <p className="text-sm leading-relaxed text-slate-400">{COPY.helper}</p>
+          <SectionLabel>{evaluator.sectionLabel}</SectionLabel>
+          <p className="text-sm leading-relaxed text-slate-400">
+            {evaluator.helper}
+          </p>
         </div>
         <TextField
           ref={nameRef}
           id="evaluator-name"
-          label={COPY.nameLabel}
+          label={evaluator.nameLabel}
           value={evaluatorName}
           onChange={handleNameChange}
-          placeholder={COPY.namePlaceholder}
-          helper={COPY.nameHelper}
+          placeholder={evaluator.namePlaceholder}
+          helper={evaluator.nameHelper}
           error={nameError}
         />
         <div className="space-y-3">
           <p className="text-sm leading-relaxed text-slate-400">
-            {COPY.statusChoice}
+            {evaluator.statusChoice}
           </p>
           <div
             role="radiogroup"
-            aria-label={COPY.statusChoice}
+            aria-label={evaluator.statusChoice}
             className="grid grid-cols-1 gap-3"
           >
-            {EVALUATOR_ACTIONS.map((action) => {
+            {evaluatorActions.map((action) => {
               const selected = evaluatorStatus === action.status;
               return (
                 <button
@@ -250,10 +252,12 @@ export function DecisionCardScreen({
                       : "border-slate-800 bg-slate-900 text-slate-200 hover:border-slate-600"
                   }`}
                 >
-                  <span className="block text-sm font-semibold">{action.label}</span>
+                  <span className="block text-sm font-semibold">
+                    {action.label}
+                  </span>
                   {selected ? (
                     <span className="mt-1 block text-xs font-medium text-slate-400">
-                      Selected
+                      {copy.chrome.selected}
                     </span>
                   ) : null}
                 </button>
@@ -266,7 +270,7 @@ export function DecisionCardScreen({
             htmlFor="evaluator-reason"
             className="block text-sm font-medium text-slate-300"
           >
-            {COPY.reasonLabel}
+            {evaluator.reasonLabel}
           </label>
           <textarea
             ref={reasonRef}
@@ -279,7 +283,7 @@ export function DecisionCardScreen({
             className="min-h-32 w-full scroll-mb-36 rounded-2xl border border-slate-700 bg-slate-900 px-4 py-3 text-base leading-relaxed text-slate-100 placeholder:text-slate-500 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-400/30"
           />
           <p id={reasonHelperId} className="text-sm text-slate-500">
-            {COPY.reasonHelper}
+            {evaluator.reasonHelper}
           </p>
           <FieldError id={reasonErrorId} message={reasonError} />
         </div>
@@ -288,12 +292,12 @@ export function DecisionCardScreen({
         ) : null}
         {showReason ? (
           <p className="rounded-2xl border border-slate-800 bg-slate-900/60 px-4 py-3 text-sm leading-relaxed text-slate-400">
-            {COPY.reasonPrefix} {recordedReason}
+            {evaluator.reasonPrefix} {recordedReason}
           </p>
         ) : null}
         {explanation && recordedName ? (
           <p className="text-sm leading-relaxed text-slate-500">
-            {COPY.recordedByPrefix} {recordedName}.
+            {evaluator.recordedByPrefix} {recordedName}.
           </p>
         ) : null}
       </section>
@@ -306,7 +310,7 @@ export function DecisionCardScreen({
           onClick={onClearSaved}
           className="block text-left text-xs text-slate-600 hover:text-slate-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400/70"
         >
-          {WIZARD_COPY.decision.clearSaved}
+          {copy.decision.clearSaved}
         </button>
       </footer>
     </article>

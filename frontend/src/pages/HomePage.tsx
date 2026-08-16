@@ -2,104 +2,89 @@ import type { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../components/Button";
 import { FeatureCard } from "../components/FeatureCard";
+import { LanguageSelector } from "../components/LanguageSelector";
 import { TimeEstimate } from "../components/TimeEstimate";
+import { useCopy } from "../hooks/useLanguage";
 
-/**
- * Interview still requires location.state.investmentIdea so Welcome can
- * enter the wizard without changing routing. The idea is not collected here.
- */
-const INTERVIEW_BOOTSTRAP_IDEA = "New investment opportunity";
-
-const FEATURES: {
-  title: string;
-  description: string;
-  icon: ReactNode;
-}[] = [
-  {
-    title: "Market Intelligence",
-    description: "Demand, competition, and regulatory context for the opportunity.",
-    icon: (
-      <svg
-        className="h-5 w-5"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.75"
-        aria-hidden="true"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M3 17 9 11l4 4 8-8M14 7h7v7"
-        />
-      </svg>
-    ),
-  },
-  {
-    title: "Technical Feasibility",
-    description: "Site, operations, and execution risk before capital is committed.",
-    icon: (
-      <svg
-        className="h-5 w-5"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.75"
-        aria-hidden="true"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M12 3 20 7.5v9L12 21 4 16.5v-9L12 3Z"
-        />
-        <path strokeLinecap="round" strokeLinejoin="round" d="M12 12 20 7.5M12 12v9M12 12 4 7.5" />
-      </svg>
-    ),
-  },
-  {
-    title: "Financial Analysis",
-    description: "Capital need, returns, and unit economics in one structured view.",
-    icon: (
-      <svg
-        className="h-5 w-5"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.75"
-        aria-hidden="true"
-      >
-        <path strokeLinecap="round" d="M4 19V9M10 19V5M16 19v-6M22 19H2" />
-      </svg>
-    ),
-  },
-  {
-    title: "AI Recommendation",
-    description: "A clear proceed, defer, or do-not-pursue posture you can defend.",
-    icon: (
-      <svg
-        className="h-5 w-5"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.75"
-        aria-hidden="true"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="m12 3 1.8 5.4L19 10l-5.2 1.6L12 17l-1.8-5.4L5 10l5.2-1.6L12 3Z"
-        />
-      </svg>
-    ),
-  },
+const FEATURE_ICONS: ReactNode[] = [
+  (
+    <svg
+      key="market"
+      className="h-5 w-5"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      aria-hidden="true"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M3 17 9 11l4 4 8-8M14 7h7v7"
+      />
+    </svg>
+  ),
+  (
+    <svg
+      key="tech"
+      className="h-5 w-5"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      aria-hidden="true"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M12 3 20 7.5v9L12 21 4 16.5v-9L12 3Z"
+      />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M12 12 20 7.5M12 12v9M12 12 4 7.5"
+      />
+    </svg>
+  ),
+  (
+    <svg
+      key="finance"
+      className="h-5 w-5"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      aria-hidden="true"
+    >
+      <path strokeLinecap="round" d="M4 19V9M10 19V5M16 19v-6M22 19H2" />
+    </svg>
+  ),
+  (
+    <svg
+      key="ai"
+      className="h-5 w-5"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      aria-hidden="true"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="m12 3 1.8 5.4L19 10l-5.2 1.6L12 17l-1.8-5.4L5 10l5.2-1.6L12 3Z"
+      />
+    </svg>
+  ),
 ];
 
 export default function HomePage() {
   const navigate = useNavigate();
+  const copy = useCopy();
 
   function handleStart() {
     navigate("/interview", {
-      state: { investmentIdea: INTERVIEW_BOOTSTRAP_IDEA },
+      state: { investmentIdea: copy.welcome.bootstrapIdea },
     });
   }
 
@@ -110,30 +95,31 @@ export default function HomePage() {
         className="pointer-events-none absolute inset-x-0 top-[-12%] mx-auto h-[420px] w-[min(100%,44rem)] rounded-full bg-emerald-500/10 blur-3xl"
       />
 
+      <div className="absolute right-4 top-4 sm:right-6 sm:top-6">
+        <LanguageSelector />
+      </div>
+
       <div className="relative mx-auto w-full max-w-3xl">
         <header className="text-center">
           <h1 className="text-4xl font-semibold tracking-tight text-white sm:text-5xl">
-            Invest Smarter
+            {copy.welcome.brand}
           </h1>
           <p className="mt-3 text-lg text-emerald-400/90">
-            AI Investment Intelligence Platform
+            {copy.welcome.kicker}
           </p>
-          <p className="mt-5 text-xl text-slate-200">
-            From idea to investment decision.
-          </p>
+          <p className="mt-5 text-xl text-slate-200">{copy.welcome.headline}</p>
           <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-slate-400">
-            Evaluate your investment opportunity using institutional-grade AI
-            analysis.
+            {copy.welcome.description}
           </p>
         </header>
 
         <ul className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {FEATURES.map((feature) => (
+          {copy.welcome.features.map((feature, index) => (
             <li key={feature.title}>
               <FeatureCard
                 title={feature.title}
                 description={feature.description}
-                icon={feature.icon}
+                icon={FEATURE_ICONS[index]}
               />
             </li>
           ))}
@@ -141,18 +127,18 @@ export default function HomePage() {
 
         <dl className="mt-10 flex flex-col gap-3 border-y border-slate-800 py-5 sm:flex-row sm:justify-center sm:gap-10">
           <TimeEstimate
-            label="Estimated interview time:"
-            value="8 minutes"
+            label={copy.welcome.interviewTimeLabel}
+            value={copy.welcome.interviewTimeValue}
           />
           <TimeEstimate
-            label="Estimated report generation:"
-            value="2 minutes"
+            label={copy.welcome.reportTimeLabel}
+            value={copy.welcome.reportTimeValue}
           />
         </dl>
 
         <div className="mt-10">
           <Button className="w-full py-5 text-lg" onClick={handleStart}>
-            Start Investment Assessment
+            {copy.welcome.start}
           </Button>
         </div>
       </div>

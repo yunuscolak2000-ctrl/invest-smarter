@@ -1,13 +1,12 @@
 import { AssistantPrompt } from "../../components/wizard/AssistantPrompt";
-import { WIZARD_COPY } from "../../mocks/interview";
+import { useCopy } from "../../hooks/useLanguage";
 
 export function FramingScreen() {
+  const copy = useCopy();
+
   return (
     <section className="space-y-6">
-      <AssistantPrompt
-        title={WIZARD_COPY.framing.title}
-        message={WIZARD_COPY.framing.message}
-      />
+      <AssistantPrompt title={copy.framing.title} message={copy.framing.message} />
     </section>
   );
 }

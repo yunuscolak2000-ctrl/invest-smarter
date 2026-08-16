@@ -11,7 +11,8 @@
  * projectContext is setup, not Q13. It is persisted on the draft/snapshot
  * and must not change rules.v0.1. Q9/Q10 labels and Decision Card
  * microcopy follow projectContext; stored enums stay the same.
- * not_sure uses private copy.
+ * not_sure uses private copy. Language is en by default and persists
+ * separately. Changing language must not change rules.v0.1.
  *
  * Later, with Vitest:
  *   import { verifyDecisionRulesV01 } from "./decisionRulesV01.qa";
@@ -21,6 +22,11 @@
 import type { ConditionId, DecisionObjectV01 } from "../types/decision";
 import { EMPTY_INTERVIEW_DRAFT, type InterviewDraft } from "../types/interview";
 import { evaluateDecisionV01 } from "./decisionRulesV01";
+import {
+  DEFAULT_LANGUAGE,
+  getCopy,
+  parseStoredLanguage,
+} from "./i18n";
 import {
   buyerTypeOptions,
   conditionsIntroLine,
@@ -916,6 +922,73 @@ function projectContextChecks(): QaCheck[] {
   ];
 }
 
+function languageChecks(): QaCheck[] {
+  const decision = evaluateDecisionV01(FIXTURE_STRONG);
+  const enView = decision
+    ? presentDecisionCard(decision, FIXTURE_STRONG, "not_accepted", "en")
+    : null;
+  const trView = decision
+    ? presentDecisionCard(decision, FIXTURE_STRONG, "not_accepted", "tr")
+    : null;
+  const enValues = buyerTypeOptions("public_project", "en").map(
+    (option) => option.value
+  );
+  const trValues = buyerTypeOptions("public_project", "tr").map(
+    (option) => option.value
+  );
+  const trCopy = getCopy("tr");
+  const leakChecks = trView && decision ? hardGuarantees("language", decision, trView) : [];
+
+  return [
+    check(
+      "language",
+      DEFAULT_LANGUAGE === "en" && getCopy("en").decision.postureProceed ===
+        "Proceed with conditions",
+      "English is the default language"
+    ),
+    check(
+      "language",
+      parseStoredLanguage(null) === null &&
+        parseStoredLanguage('"tr"') === "tr" &&
+        parseStoredLanguage("tr") === "tr" &&
+        parseStoredLanguage("de") === null,
+      "language storage parser accepts only en/tr"
+    ),
+    check(
+      "language",
+      trCopy.decision.postureProceed === "Koşullu ilerle" &&
+        trCopy.decision.postureDefer === "Ertele" &&
+        trCopy.options.projectContext.public_project.label === "Kamu projesi" &&
+        trCopy.projectContext.title === "Neyi değerlendiriyorsunuz?",
+      "Turkish dictionary covers Welcome/context/card core labels"
+    ),
+    check(
+      "language",
+      JSON.stringify(enValues) === JSON.stringify(trValues) &&
+        trValues.includes("b2b_contract"),
+      "Turkish labels must not change stored enum values"
+    ),
+    check(
+      "language",
+      enView?.postureTitle === "Proceed with conditions" &&
+        trView?.postureTitle === "Koşullu ilerle" &&
+        enView?.productSummary === trView?.productSummary,
+      "Decision Card can be presented in either language from the same snapshot"
+    ),
+    check(
+      "language",
+      decision !== null &&
+        evaluateDecisionV01(FIXTURE_STRONG) !== null &&
+        JSON.stringify(decision) ===
+          JSON.stringify(evaluateDecisionV01(FIXTURE_STRONG)),
+      "language must not change rules.v0.1 output"
+    ),
+    ...leakChecks.map((item) =>
+      check(item.caseId, item.ok, `Turkish card: ${item.detail}`)
+    ),
+  ];
+}
+
 export function verifyDecisionRulesV01(): QaReport {
   const checks = [
     ...CASES.flatMap(runCase),
@@ -924,6 +997,7 @@ export function verifyDecisionRulesV01(): QaReport {
     ...persistenceChecks(),
     ...draftPersistenceChecks(),
     ...projectContextChecks(),
+    ...languageChecks(),
   ];
   const failed = checks.filter((item) => !item.ok).length;
   return {

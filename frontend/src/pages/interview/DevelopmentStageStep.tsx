@@ -1,7 +1,9 @@
 import type { Ref } from "react";
 import { AssistantPrompt } from "../../components/wizard/AssistantPrompt";
 import { SelectCardGroup } from "../../components/wizard/SelectCard";
-import { DEVELOPMENT_STAGE_OPTIONS, WIZARD_COPY } from "../../mocks/interview";
+import { useCopy } from "../../hooks/useLanguage";
+import { labeledOptions } from "../../lib/i18n";
+import { DEVELOPMENT_STAGE_OPTIONS } from "../../mocks/interview";
 import type { DevelopmentStage } from "../../types/interview";
 
 type DevelopmentStageStepProps = {
@@ -17,14 +19,19 @@ export function DevelopmentStageStep({
   error,
   controlRef,
 }: DevelopmentStageStepProps) {
+  const copy = useCopy();
+
   return (
     <section className="space-y-6">
-      <AssistantPrompt title={WIZARD_COPY.q6.title} message={WIZARD_COPY.q6.message} />
+      <AssistantPrompt title={copy.q6.title} message={copy.q6.message} />
       <SelectCardGroup
         ref={controlRef}
         name="development-stage"
         value={value}
-        options={DEVELOPMENT_STAGE_OPTIONS}
+        options={labeledOptions(
+          DEVELOPMENT_STAGE_OPTIONS,
+          copy.options.developmentStage
+        )}
         onChange={(next) => onChange(next as DevelopmentStage)}
         error={error}
       />

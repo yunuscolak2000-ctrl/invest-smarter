@@ -1,8 +1,11 @@
 import type { Ref } from "react";
 import { AssistantPrompt } from "../../components/wizard/AssistantPrompt";
 import { SelectCardGroup } from "../../components/wizard/SelectCard";
-import { demandCertaintyOptions, q10Prompt } from "../../lib/contextAwareCopy";
-import { WIZARD_COPY } from "../../mocks/interview";
+import { useLanguage } from "../../hooks/useLanguage";
+import {
+  demandCertaintyOptions,
+  q10Prompt,
+} from "../../lib/contextAwareCopy";
 import type {
   BuyerType,
   DemandCertainty,
@@ -26,29 +29,30 @@ export function DemandCertaintyStep({
   error,
   controlRef,
 }: DemandCertaintyStepProps) {
-  const copy = q10Prompt(projectContext);
+  const { language, copy } = useLanguage();
+  const prompt = q10Prompt(projectContext, language);
   const showBuyerWarning =
     buyerType === "unknown" && (value === "binding" || value === "loi");
 
   return (
     <section className="space-y-6">
-      <AssistantPrompt title={copy.title} message={copy.message} />
+      <AssistantPrompt title={prompt.title} message={prompt.message} />
       <SelectCardGroup
         ref={controlRef}
         name="demand-certainty"
         value={value}
-        options={demandCertaintyOptions(projectContext)}
+        options={demandCertaintyOptions(projectContext, language)}
         onChange={(next) => onChange(next as DemandCertainty)}
         error={error}
       />
       {value === "hypothesis" ? (
         <p className="text-sm leading-relaxed text-slate-400">
-          {WIZARD_COPY.q10.hypothesisConfirm}
+          {copy.q10.hypothesisConfirm}
         </p>
       ) : null}
       {showBuyerWarning ? (
         <p className="text-sm leading-relaxed text-slate-400">
-          {WIZARD_COPY.q10.buyerUndefinedWarning}
+          {copy.q10.buyerUndefinedWarning}
         </p>
       ) : null}
     </section>

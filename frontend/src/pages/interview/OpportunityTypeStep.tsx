@@ -1,7 +1,9 @@
 import type { Ref } from "react";
 import { AssistantPrompt } from "../../components/wizard/AssistantPrompt";
 import { SelectCardGroup } from "../../components/wizard/SelectCard";
-import { OPPORTUNITY_TYPE_OPTIONS, WIZARD_COPY } from "../../mocks/interview";
+import { useCopy } from "../../hooks/useLanguage";
+import { labeledOptions } from "../../lib/i18n";
+import { OPPORTUNITY_TYPE_OPTIONS } from "../../mocks/interview";
 import type { OpportunityType } from "../../types/interview";
 
 type OpportunityTypeStepProps = {
@@ -17,16 +19,20 @@ export function OpportunityTypeStep({
   error,
   controlRef,
 }: OpportunityTypeStepProps) {
+  const copy = useCopy();
+
   return (
     <section className="space-y-6">
-      <AssistantPrompt title={WIZARD_COPY.q1.title} message={WIZARD_COPY.q1.message} />
+      <AssistantPrompt title={copy.q1.title} message={copy.q1.message} />
       <SelectCardGroup
         ref={controlRef}
         name="opportunity-type"
         value={value}
-        options={OPPORTUNITY_TYPE_OPTIONS}
+        options={labeledOptions(
+          OPPORTUNITY_TYPE_OPTIONS,
+          copy.options.opportunityType
+        )}
         onChange={(next) => onChange(next as OpportunityType)}
-        columns={2}
         error={error}
       />
     </section>
