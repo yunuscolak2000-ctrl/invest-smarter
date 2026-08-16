@@ -117,6 +117,22 @@ export const EN: UiCopy = {
     englishShort: "EN",
     turkishShort: "TR",
   },
+  qaHarness: {
+    title: "Decision QA Harness",
+    helper:
+      "Internal fixture runner for rules.v0.1. Not part of the customer workflow.",
+    expectedPosture: "Expected posture",
+    actualPosture: "Actual posture",
+    expectedConfidence: "Expected confidence",
+    actualConfidence: "Actual confidence",
+    pass: "Pass",
+    check: "Check",
+    rulesQa: "Decision rules QA",
+    rulesPassed: "Passed",
+    rulesFailed: "Failed",
+    selectPrompt: "Select a fixture to render the Decision Card.",
+    notSet: "—",
+  },
   framing: {
     title: WIZARD_COPY.framing.title,
     message: WIZARD_COPY.framing.message,

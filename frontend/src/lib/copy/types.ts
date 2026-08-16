@@ -52,6 +52,21 @@ export type UiCopy = {
     englishShort: string;
     turkishShort: string;
   };
+  qaHarness: {
+    title: string;
+    helper: string;
+    expectedPosture: string;
+    actualPosture: string;
+    expectedConfidence: string;
+    actualConfidence: string;
+    pass: string;
+    check: string;
+    rulesQa: string;
+    rulesPassed: string;
+    rulesFailed: string;
+    selectPrompt: string;
+    notSet: string;
+  };
   framing: {
     title: string;
     message: string;

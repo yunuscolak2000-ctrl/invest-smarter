@@ -53,6 +53,22 @@ export const TR: UiCopy = {
     englishShort: "EN",
     turkishShort: "TR",
   },
+  qaHarness: {
+    title: "Karar QA Aracı",
+    helper:
+      "rules.v0.1 için dahili fixture çalıştırıcı. Müşteri akışının parçası değildir.",
+    expectedPosture: "Beklenen duruş",
+    actualPosture: "Gerçek duruş",
+    expectedConfidence: "Beklenen güven",
+    actualConfidence: "Gerçek güven",
+    pass: "Geçti",
+    check: "Kontrol",
+    rulesQa: "Karar kuralları QA",
+    rulesPassed: "Başarılı",
+    rulesFailed: "Hatalı",
+    selectPrompt: "Karar Kartı’nı görmek için bir fixture seçin.",
+    notSet: "—",
+  },
   framing: {
     title: "Başlamadan önce",
     message:

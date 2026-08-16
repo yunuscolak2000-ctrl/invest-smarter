@@ -2,7 +2,9 @@
 
 Lightweight, deterministic coverage for the intake policy. Same draft always yields the same Decision Object. No AI. No UI change.
 
-There is **no test runner** in this repo yet. Do not treat this file as CI. The executable checks live in `frontend/src/lib/decisionRulesV01.qa.ts` and the drafts in `frontend/src/lib/decisionRulesV01.fixtures.ts`.
+The executable checks live in `frontend/src/lib/decisionRulesV01.qa.ts` and the drafts in `frontend/src/lib/decisionRulesV01.fixtures.ts`.
+
+Internal UI: open `/qa/decision`. It runs the same fixtures through `evaluateDecisionV01` → `presentDecisionCard` → the real Decision Card. The fixture snapshot stays in page state and **does not** write to localStorage. The customer Welcome/wizard path is unchanged. There is no link to this route from Welcome.
 
 ## What is covered
 
@@ -73,6 +75,15 @@ Q9 and Q10 keep the same stored enums. Labels and advisor copy follow `projectCo
 - The same snapshot can be viewed in EN or TR. Stored enum values stay English (`public_project`, `b2b_contract`, …).
 - Welcome no longer claims AI, Market, Financial, or report-generation capabilities. English and Turkish both use the honesty-pass copy. Language selector still persists. **Start assessment** still clears draft and snapshot and starts a new run.
 
+**A3. Internal Decision QA harness** (`/qa/decision`)
+
+- Open `/qa/decision` directly. It is not linked from Welcome.
+- Seven fixtures: Strong, Average, Weak, Hypothesis mega, Financing read without paper, Bank screen with hypothesis, Restricted geography.
+- Click a fixture. The real Decision Card must render. Expected vs actual posture/confidence show Pass or Check.
+- Switching EN/TR changes card copy only, not the actual decision numbers.
+- Refreshing `/qa/decision` does **not** restore the fixture. The user’s Welcome/interview localStorage keys must be unchanged.
+- “Decision rules QA: Passed / Failed” runs `verifyDecisionRulesV01()` in memory.
+
 **B. Call the helper** from a future test file or a throwaway console:
 
 ```ts
@@ -82,7 +93,7 @@ const report = verifyDecisionRulesV01();
 // report.failed === 0
 ```
 
-The helper is not wired into the product and is not a npm script. It cannot be run until a TypeScript runner exists.
+The helper is also invoked on `/qa/decision`. It is not a npm script and is not part of the customer workflow.
 
 ## What should become automated tests later
 
