@@ -29,6 +29,7 @@ export type UiCopy = {
     headline: string;
     description: string;
     start: string;
+    prototypeNote: string;
     interviewTimeLabel: string;
     interviewTimeValue: string;
     reportTimeLabel: string;

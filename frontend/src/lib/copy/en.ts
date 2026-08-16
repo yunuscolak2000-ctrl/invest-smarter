@@ -67,36 +67,38 @@ const PUBLIC_DEMAND: UiCopy["options"]["demandCertaintyPublic"] = {
 export const EN: UiCopy = {
   welcome: {
     brand: "Invest Smarter",
-    kicker: "AI Investment Intelligence Platform",
-    headline: "From idea to investment decision.",
+    kicker: "Structured investment screening before the feasibility study.",
+    headline: "",
     description:
-      "Evaluate your investment opportunity using institutional-grade AI analysis.",
-    start: "Start Investment Assessment",
+      "Evaluate an investment idea, public project, or development-finance file through a guided 12-question interview and receive a rules-based first recommendation.",
+    start: "Start assessment",
+    prototypeNote:
+      "This prototype does not generate a feasibility study, financial model, grant decision, or investment advice.",
     interviewTimeLabel: "Estimated interview time:",
     interviewTimeValue: "8 minutes",
-    reportTimeLabel: "Estimated report generation:",
-    reportTimeValue: "2 minutes",
+    reportTimeLabel: "Recommendation:",
+    reportTimeValue: "In this session",
     bootstrapIdea: "New investment opportunity",
     features: [
       {
-        title: "Market Intelligence",
+        title: "Structured interview",
         description:
-          "Demand, competition, and regulatory context for the opportunity.",
+          "A guided 12-question screen for private, public, and development-finance opportunities.",
       },
       {
-        title: "Technical Feasibility",
+        title: "Review before recommendation",
         description:
-          "Site, operations, and execution risk before capital is committed.",
+          "Confirm the answers before any recommendation is produced.",
       },
       {
-        title: "Financial Analysis",
+        title: "Rules-based decision card",
         description:
-          "Capital need, returns, and unit economics in one structured view.",
+          "Receive a deterministic first recommendation with confidence and conditions.",
       },
       {
-        title: "AI Recommendation",
+        title: "Evaluator record",
         description:
-          "A clear proceed, defer, or do-not-pursue posture you can defend.",
+          "Record whether the evaluator accepts, amends, or rejects the recommendation.",
       },
     ],
   },

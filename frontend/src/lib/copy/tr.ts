@@ -3,36 +3,38 @@ import type { UiCopy } from "./types";
 export const TR: UiCopy = {
   welcome: {
     brand: "Invest Smarter",
-    kicker: "Yapay zeka destekli yatırım değerlendirme",
-    headline: "Fikirden yatırım kararına.",
+    kicker: "Fizibilite öncesi yapılandırılmış yatırım ve proje ön taraması.",
+    headline: "",
     description:
-      "Yatırım fırsatınızı kurumsal standartta, yapılandırılmış bir değerlendirme ile tarayın.",
-    start: "Değerlendirmeyi başlat",
+      "Bir yatırım fikrini, kamu projesini veya kalkınma finansmanı dosyasını 12 soruluk yönlendirilmiş görüşme ile değerlendirin ve kural tabanlı ilk öneri alın.",
+    start: "Değerlendirmeye başla",
+    prototypeNote:
+      "Bu prototip fizibilite raporu, finansal model, hibe kararı veya yatırım tavsiyesi üretmez.",
     interviewTimeLabel: "Tahmini görüşme süresi:",
     interviewTimeValue: "8 dakika",
-    reportTimeLabel: "Tahmini sonuç üretimi:",
-    reportTimeValue: "2 dakika",
+    reportTimeLabel: "Öneri:",
+    reportTimeValue: "Bu oturumda",
     bootstrapIdea: "Yeni yatırım fırsatı",
     features: [
       {
-        title: "Piyasa görünümü",
+        title: "Yapılandırılmış görüşme",
         description:
-          "Talep, rekabet ve düzenleme bağlamı — fırsatın içinde durduğu zemin.",
+          "Özel sektör, kamu ve kalkınma finansmanı fırsatları için 12 soruluk yönlendirilmiş ön tarama.",
       },
       {
-        title: "Teknik fizibilite",
+        title: "Öneri öncesi gözden geçirme",
         description:
-          "Saha, işletme ve uygulama riski; kaynak bağlanmadan önce.",
+          "Her öneri üretilmeden önce cevapları kontrol edin.",
       },
       {
-        title: "Finansal analiz",
+        title: "Kural tabanlı karar kartı",
         description:
-          "Sermaye ihtiyacı, getiri ve birim ekonomi tek yapıda.",
+          "Güven düzeyi ve koşullarla birlikte deterministik ilk öneri alın.",
       },
       {
-        title: "Karar önerisi",
+        title: "Değerlendirici kaydı",
         description:
-          "Savunabileceğiniz net bir duruş: koşullu ilerle, ertele veya devam etme.",
+          "Değerlendiricinin öneriyi kabul, tadil veya ret durumunu kaydedin.",
       },
     ],
   },

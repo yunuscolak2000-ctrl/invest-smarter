@@ -963,6 +963,27 @@ function languageChecks(): QaCheck[] {
       "Turkish dictionary covers Welcome/context/card core labels"
     ),
     check(
+      "welcome-honesty",
+      getCopy("en").welcome.start === "Start assessment" &&
+        getCopy("en").welcome.kicker.includes("feasibility study") &&
+        !getCopy("en").welcome.kicker.includes("AI") &&
+        getCopy("en").welcome.features.every(
+          (feature) =>
+            !/Market Intelligence|Technical Feasibility|Financial Analysis|AI Recommendation/i.test(
+              `${feature.title} ${feature.description}`
+            )
+        ) &&
+        !getCopy("en").welcome.reportTimeLabel.toLowerCase().includes("report"),
+      "Welcome English copy must not overclaim AI, market, financial, or report capabilities"
+    ),
+    check(
+      "welcome-honesty",
+      trCopy.welcome.start === "Değerlendirmeye başla" &&
+        trCopy.welcome.prototypeNote.includes("fizibilite raporu") &&
+        trCopy.welcome.features[0]?.title === "Yapılandırılmış görüşme",
+      "Welcome Turkish copy matches the honesty pass"
+    ),
+    check(
       "language",
       JSON.stringify(enValues) === JSON.stringify(trValues) &&
         trValues.includes("b2b_contract"),

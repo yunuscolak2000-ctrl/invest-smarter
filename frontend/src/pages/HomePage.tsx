@@ -107,9 +107,14 @@ export default function HomePage() {
           <p className="mt-3 text-lg text-emerald-400/90">
             {copy.welcome.kicker}
           </p>
-          <p className="mt-5 text-xl text-slate-200">{copy.welcome.headline}</p>
+          {copy.welcome.headline ? (
+            <p className="mt-5 text-xl text-slate-200">{copy.welcome.headline}</p>
+          ) : null}
           <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-slate-400">
             {copy.welcome.description}
+          </p>
+          <p className="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-slate-500">
+            {copy.welcome.prototypeNote}
           </p>
         </header>
 
