@@ -35,7 +35,7 @@ English words that match an answer (for example “hypothesis” in a sentence) 
 - Backend, export, PDF, login, or cloud save
 - Wizard-draft persistence (refresh mid-interview still returns to Welcome)
 
-Evaluator name and reason are **client overlay** fields on the snapshot. They do not change posture, confidence, conditions, or the frozen draft. Blank name is allowed. Accept does not require a reason. Amend and reject do. Changing any interview answer still clears the snapshot **and** the localStorage item.
+Evaluator name and reason are **client overlay** fields on the snapshot. They do not change posture, confidence, conditions, or the frozen draft. Accept, amend, and reject all require a non-blank evaluator name. Accept does not require a reason. Amend and reject require name and reason. Whitespace-only name is invalid. Changing any interview answer still clears the snapshot **and** the localStorage item. Validation errors are UI-only and do not persist.
 
 The current snapshot is saved in this browser under `invest-smarter.recommendationSnapshot.v0.1`. Refresh on the Decision Card restores it. Invalid JSON or an incompatible schema is discarded silently. Starting a new interview from Welcome does not resume the saved card; it starts framing and replaces the saved snapshot when a new recommendation is created (the previous save is cleared on that new start).
 

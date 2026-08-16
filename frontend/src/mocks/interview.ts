@@ -547,13 +547,15 @@ export const WIZARD_COPY = {
       accepted:
         "The evaluator accepted this recommendation as written.",
       amended:
-        "The evaluator amended this recommendation. The rules output remains unchanged.",
+        "The evaluator amended this recommendation. The recommendation itself remains unchanged.",
       rejected:
-        "The evaluator rejected this recommendation. The rules output remains unchanged.",
+        "The evaluator rejected this recommendation. The recommendation itself remains unchanged.",
       nameLabel: "Evaluator name",
       nameHelper:
         "Use the person or desk responsible for this recommendation.",
       namePlaceholder: "e.g. Investment Desk",
+      nameRequiredError:
+        "Add an evaluator name before recording this decision.",
       reasonLabel: "Reason",
       reasonHelper:
         "Record the evaluator’s reason if the recommendation is amended or rejected.",

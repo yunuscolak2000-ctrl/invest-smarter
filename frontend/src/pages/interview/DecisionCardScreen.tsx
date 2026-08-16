@@ -14,7 +14,11 @@ type DecisionCardScreenProps = {
   evaluatorReason: string;
   onEvaluatorName: (value: string) => void;
   onEvaluatorReason: (value: string) => void;
-  onRecordDecision: (status: RecordedStatus, reason: string) => string | null;
+  onRecordDecision: (
+    status: RecordedStatus,
+    name: string,
+    reason: string
+  ) => { name: string | null; reason: string | null };
   onClearSaved: () => void;
 };
 
@@ -61,7 +65,9 @@ export function DecisionCardScreen({
   onClearSaved,
 }: DecisionCardScreenProps) {
   const headingRef = useRef<HTMLHeadingElement>(null);
+  const nameRef = useRef<HTMLInputElement>(null);
   const reasonRef = useRef<HTMLTextAreaElement>(null);
+  const [nameError, setNameError] = useState<string | null>(null);
   const [reasonError, setReasonError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -91,15 +97,25 @@ export function DecisionCardScreen({
     (evaluatorStatus === "amended" || evaluatorStatus === "rejected") &&
     recordedReason.length > 0;
 
+  function handleNameChange(value: string) {
+    setNameError(null);
+    onEvaluatorName(value);
+  }
+
   function handleReasonChange(value: string) {
     setReasonError(null);
     onEvaluatorReason(value);
   }
 
   function handleRecord(status: RecordedStatus) {
-    const message = onRecordDecision(status, evaluatorReason);
-    setReasonError(message);
-    if (message) {
+    const errors = onRecordDecision(status, evaluatorName, evaluatorReason);
+    setNameError(errors.name);
+    setReasonError(errors.reason);
+    if (errors.name) {
+      requestAnimationFrame(() => nameRef.current?.focus());
+      return;
+    }
+    if (errors.reason) {
       requestAnimationFrame(() => reasonRef.current?.focus());
     }
   }
@@ -196,12 +212,14 @@ export function DecisionCardScreen({
           <p className="text-sm leading-relaxed text-slate-400">{COPY.helper}</p>
         </div>
         <TextField
+          ref={nameRef}
           id="evaluator-name"
           label={COPY.nameLabel}
           value={evaluatorName}
-          onChange={onEvaluatorName}
+          onChange={handleNameChange}
           placeholder={COPY.namePlaceholder}
           helper={COPY.nameHelper}
+          error={nameError}
         />
         <div className="space-y-3">
           <p className="text-sm leading-relaxed text-slate-400">

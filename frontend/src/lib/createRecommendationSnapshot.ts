@@ -30,16 +30,29 @@ export function createRecommendationSnapshot(
   };
 }
 
-export function evaluatorReasonError(
+export type EvaluatorDecisionErrors = {
+  name: string | null;
+  reason: string | null;
+};
+
+export function evaluatorDecisionErrors(
   status: Exclude<EvaluatorDecisionStatus, "not_accepted">,
+  name: string,
   reason: string
-): string | null {
-  const trimmed = reason.trim();
-  if (status === "amended" && !trimmed) {
-    return WIZARD_COPY.decision.evaluator.amendReasonError;
+): EvaluatorDecisionErrors {
+  const copy = WIZARD_COPY.decision.evaluator;
+  const nameError = name.trim() ? null : copy.nameRequiredError;
+  let reasonError: string | null = null;
+  if (status === "amended" && !reason.trim()) {
+    reasonError = copy.amendReasonError;
+  } else if (status === "rejected" && !reason.trim()) {
+    reasonError = copy.rejectReasonError;
   }
-  if (status === "rejected" && !trimmed) {
-    return WIZARD_COPY.decision.evaluator.rejectReasonError;
-  }
-  return null;
+  return { name: nameError, reason: reasonError };
+}
+
+export function hasEvaluatorDecisionErrors(
+  errors: EvaluatorDecisionErrors
+): boolean {
+  return Boolean(errors.name || errors.reason);
 }

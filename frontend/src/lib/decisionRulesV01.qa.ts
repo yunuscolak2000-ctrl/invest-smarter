@@ -18,7 +18,7 @@ import type { InterviewDraft } from "../types/interview";
 import { evaluateDecisionV01 } from "./decisionRulesV01";
 import {
   createRecommendationSnapshot,
-  evaluatorReasonError,
+  evaluatorDecisionErrors,
 } from "./createRecommendationSnapshot";
 import {
   parseStoredRecommendationSnapshot,
@@ -408,7 +408,7 @@ function snapshotChecks(): QaCheck[] {
     check(
       "snapshot",
       first.evaluatorName === "" && first.evaluatorReason === "",
-      "blank evaluator name is allowed in v0.1"
+      "new snapshot starts with a blank name until a status is recorded"
     ),
     check(
       "snapshot",
@@ -443,23 +443,44 @@ function snapshotChecks(): QaCheck[] {
     ),
     check(
       "snapshot",
-      evaluatorReasonError("accepted", "") === null,
-      "accept does not require a reason"
+      evaluatorDecisionErrors("accepted", "", "").name !== null &&
+        evaluatorDecisionErrors("accepted", "", "").reason === null,
+      "accept requires a name and does not require a reason"
     ),
     check(
       "snapshot",
-      evaluatorReasonError("amended", "") !== null,
-      "amend requires a reason"
+      evaluatorDecisionErrors("accepted", "   ", "").name !== null,
+      "whitespace-only name is invalid"
     ),
     check(
       "snapshot",
-      evaluatorReasonError("rejected", "") !== null,
-      "reject requires a reason"
+      evaluatorDecisionErrors("accepted", "Investment Desk", "").name === null &&
+        evaluatorDecisionErrors("accepted", "Investment Desk", "").reason ===
+          null,
+      "accept proceeds when a name exists"
     ),
     check(
       "snapshot",
-      evaluatorReasonError("amended", "Need offtake paper") === null,
-      "amend proceeds when a reason exists"
+      evaluatorDecisionErrors("amended", "", "").name !== null &&
+        evaluatorDecisionErrors("amended", "", "").reason !== null,
+      "amend requires a name and a reason"
+    ),
+    check(
+      "snapshot",
+      evaluatorDecisionErrors("rejected", "", "").name !== null &&
+        evaluatorDecisionErrors("rejected", "", "").reason !== null,
+      "reject requires a name and a reason"
+    ),
+    check(
+      "snapshot",
+      evaluatorDecisionErrors("amended", "Investment Desk", "Need offtake paper")
+        .name === null &&
+        evaluatorDecisionErrors(
+          "amended",
+          "Investment Desk",
+          "Need offtake paper"
+        ).reason === null,
+      "amend proceeds when name and reason exist"
     ),
   ];
 }

@@ -2,7 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import { presentDecisionCard } from "../lib/presentDecisionCard";
 import {
   createRecommendationSnapshot,
-  evaluatorReasonError,
+  evaluatorDecisionErrors,
+  hasEvaluatorDecisionErrors,
+  type EvaluatorDecisionErrors,
 } from "../lib/createRecommendationSnapshot";
 import {
   clearRecommendationSnapshot,
@@ -334,14 +336,15 @@ export function useInterviewWizard(options: WizardOptions = {}) {
 
   function recordEvaluatorDecision(
     status: Exclude<EvaluatorDecisionStatus, "not_accepted">,
+    name: string,
     reason: string
-  ): string | null {
-    const message = evaluatorReasonError(status, reason);
-    if (message) return message;
+  ): EvaluatorDecisionErrors {
+    const errors = evaluatorDecisionErrors(status, name, reason);
+    if (hasEvaluatorDecisionErrors(errors)) return errors;
     setSnapshot((current) =>
       current ? { ...current, evaluatorStatus: status } : current
     );
-    return null;
+    return { name: null, reason: null };
   }
 
   function clearSavedRecommendation() {
