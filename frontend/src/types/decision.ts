@@ -22,6 +22,8 @@ export type RecommendationSnapshot = {
   frozenDraft: InterviewDraft;
   decisionObject: DecisionObjectV01;
   evaluatorStatus: EvaluatorDecisionStatus;
+  evaluatorName: string;
+  evaluatorReason: string;
 };
 
 export type ConfidenceBand = "low" | "medium" | "high";

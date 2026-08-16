@@ -1,6 +1,9 @@
 import { useRef, useState } from "react";
 import { presentDecisionCard } from "../lib/presentDecisionCard";
-import { createRecommendationSnapshot } from "../lib/createRecommendationSnapshot";
+import {
+  createRecommendationSnapshot,
+  evaluatorReasonError,
+} from "../lib/createRecommendationSnapshot";
 import {
   validateBuyerType,
   validateCapitalScale,
@@ -275,10 +278,28 @@ export function useInterviewWizard() {
     patchDraft({ decisionNeeded: value });
   }
 
-  function setEvaluatorStatus(status: EvaluatorDecisionStatus) {
+  function setEvaluatorName(value: string) {
+    setSnapshot((current) =>
+      current ? { ...current, evaluatorName: value } : current
+    );
+  }
+
+  function setEvaluatorReason(value: string) {
+    setSnapshot((current) =>
+      current ? { ...current, evaluatorReason: value } : current
+    );
+  }
+
+  function recordEvaluatorDecision(
+    status: Exclude<EvaluatorDecisionStatus, "not_accepted">,
+    reason: string
+  ): string | null {
+    const message = evaluatorReasonError(status, reason);
+    if (message) return message;
     setSnapshot((current) =>
       current ? { ...current, evaluatorStatus: status } : current
     );
+    return null;
   }
 
   const isQuestionStep = step.startsWith("q");
@@ -314,7 +335,11 @@ export function useInterviewWizard() {
     minutesLeft: question?.minutesLeft,
     decisionView,
     evaluatorStatus: snapshot?.evaluatorStatus ?? DEFAULT_EVALUATOR_STATUS,
-    setEvaluatorStatus,
+    evaluatorName: snapshot?.evaluatorName ?? "",
+    evaluatorReason: snapshot?.evaluatorReason ?? "",
+    setEvaluatorName,
+    setEvaluatorReason,
+    recordEvaluatorDecision,
     goPrevious,
     goNext,
     goToStep,

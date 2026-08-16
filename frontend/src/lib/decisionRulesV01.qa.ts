@@ -14,7 +14,10 @@
 import type { ConditionId, DecisionObjectV01 } from "../types/decision";
 import type { InterviewDraft } from "../types/interview";
 import { evaluateDecisionV01 } from "./decisionRulesV01";
-import { createRecommendationSnapshot } from "./createRecommendationSnapshot";
+import {
+  createRecommendationSnapshot,
+  evaluatorReasonError,
+} from "./createRecommendationSnapshot";
 import {
   FIXTURE_AVERAGE,
   FIXTURE_BANK_HYPOTHESIS,
@@ -386,6 +389,8 @@ function snapshotChecks(): QaCheck[] {
   const accepted: typeof first = {
     ...first,
     evaluatorStatus: "accepted",
+    evaluatorName: "Investment Desk",
+    evaluatorReason: "Accepted as written",
   };
 
   return [
@@ -393,6 +398,11 @@ function snapshotChecks(): QaCheck[] {
       "snapshot",
       first.evaluatorStatus === "not_accepted",
       "new snapshot starts as not accepted"
+    ),
+    check(
+      "snapshot",
+      first.evaluatorName === "" && first.evaluatorReason === "",
+      "blank evaluator name is allowed in v0.1"
     ),
     check(
       "snapshot",
@@ -418,12 +428,32 @@ function snapshotChecks(): QaCheck[] {
       "snapshot",
       JSON.stringify(accepted.decisionObject) ===
         JSON.stringify(first.decisionObject),
-      "evaluator status must not change the decision object"
+      "evaluator overlay must not change the decision object"
     ),
     check(
       "snapshot",
       JSON.stringify(accepted.frozenDraft) === JSON.stringify(first.frozenDraft),
-      "evaluator status must not change the frozen draft"
+      "evaluator overlay must not change the frozen draft"
+    ),
+    check(
+      "snapshot",
+      evaluatorReasonError("accepted", "") === null,
+      "accept does not require a reason"
+    ),
+    check(
+      "snapshot",
+      evaluatorReasonError("amended", "") !== null,
+      "amend requires a reason"
+    ),
+    check(
+      "snapshot",
+      evaluatorReasonError("rejected", "") !== null,
+      "reject requires a reason"
+    ),
+    check(
+      "snapshot",
+      evaluatorReasonError("amended", "Need offtake paper") === null,
+      "amend proceeds when a reason exists"
     ),
   ];
 }

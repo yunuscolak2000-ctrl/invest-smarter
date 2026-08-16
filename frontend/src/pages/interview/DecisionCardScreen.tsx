@@ -1,33 +1,43 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { FieldError } from "../../components/wizard/FieldError";
+import { TextField } from "../../components/wizard/TextField";
 import { WIZARD_COPY } from "../../mocks/interview";
 import type { DecisionCardView } from "../../lib/presentDecisionCard";
 import type { EvaluatorDecisionStatus } from "../../types/decision";
 
+type RecordedStatus = Exclude<EvaluatorDecisionStatus, "not_accepted">;
+
 type DecisionCardScreenProps = {
   view: DecisionCardView | null;
   evaluatorStatus: EvaluatorDecisionStatus;
-  onEvaluatorStatus: (status: EvaluatorDecisionStatus) => void;
+  evaluatorName: string;
+  evaluatorReason: string;
+  onEvaluatorName: (value: string) => void;
+  onEvaluatorReason: (value: string) => void;
+  onRecordDecision: (status: RecordedStatus, reason: string) => string | null;
 };
 
+const COPY = WIZARD_COPY.decision.evaluator;
+
 const EVALUATOR_ACTIONS: {
-  status: Exclude<EvaluatorDecisionStatus, "not_accepted">;
+  status: RecordedStatus;
   label: string;
   explanation: string;
 }[] = [
   {
     status: "accepted",
-    label: WIZARD_COPY.decision.evaluator.accept,
-    explanation: WIZARD_COPY.decision.evaluator.accepted,
+    label: COPY.accept,
+    explanation: COPY.accepted,
   },
   {
     status: "amended",
-    label: WIZARD_COPY.decision.evaluator.amend,
-    explanation: WIZARD_COPY.decision.evaluator.amended,
+    label: COPY.amend,
+    explanation: COPY.amended,
   },
   {
     status: "rejected",
-    label: WIZARD_COPY.decision.evaluator.reject,
-    explanation: WIZARD_COPY.decision.evaluator.rejected,
+    label: COPY.reject,
+    explanation: COPY.rejected,
   },
 ];
 
@@ -42,9 +52,15 @@ function SectionLabel({ children }: { children: string }) {
 export function DecisionCardScreen({
   view,
   evaluatorStatus,
-  onEvaluatorStatus,
+  evaluatorName,
+  evaluatorReason,
+  onEvaluatorName,
+  onEvaluatorReason,
+  onRecordDecision,
 }: DecisionCardScreenProps) {
   const headingRef = useRef<HTMLHeadingElement>(null);
+  const reasonRef = useRef<HTMLTextAreaElement>(null);
+  const [reasonError, setReasonError] = useState<string | null>(null);
 
   useEffect(() => {
     headingRef.current?.focus();
@@ -67,6 +83,33 @@ export function DecisionCardScreen({
   const explanation =
     EVALUATOR_ACTIONS.find((action) => action.status === evaluatorStatus)
       ?.explanation ?? null;
+  const recordedName = evaluatorName.trim();
+  const recordedReason = evaluatorReason.trim();
+  const showReason =
+    (evaluatorStatus === "amended" || evaluatorStatus === "rejected") &&
+    recordedReason.length > 0;
+
+  function handleReasonChange(value: string) {
+    setReasonError(null);
+    onEvaluatorReason(value);
+  }
+
+  function handleRecord(status: RecordedStatus) {
+    const message = onRecordDecision(status, evaluatorReason);
+    setReasonError(message);
+    if (message) {
+      requestAnimationFrame(() => reasonRef.current?.focus());
+    }
+  }
+
+  const reasonHelperId = "evaluator-reason-helper";
+  const reasonErrorId = "evaluator-reason-error";
+  const reasonDescribedBy = [
+    reasonHelperId,
+    reasonError ? reasonErrorId : null,
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <article className="space-y-10 pb-40">
@@ -146,13 +189,19 @@ export function DecisionCardScreen({
       </section>
 
       <section className="space-y-3" aria-label="Evaluator decision">
-        <SectionLabel>{WIZARD_COPY.decision.evaluator.sectionLabel}</SectionLabel>
-        <p className="text-sm leading-relaxed text-slate-400">
-          {WIZARD_COPY.decision.evaluator.helper}
-        </p>
+        <SectionLabel>{COPY.sectionLabel}</SectionLabel>
+        <p className="text-sm leading-relaxed text-slate-400">{COPY.helper}</p>
+        <TextField
+          id="evaluator-name"
+          label={COPY.nameLabel}
+          value={evaluatorName}
+          onChange={onEvaluatorName}
+          placeholder={COPY.namePlaceholder}
+          helper={COPY.nameHelper}
+        />
         <div
           role="radiogroup"
-          aria-label={WIZARD_COPY.decision.evaluator.sectionLabel}
+          aria-label={COPY.sectionLabel}
           className="grid grid-cols-1 gap-3"
         >
           {EVALUATOR_ACTIONS.map((action) => {
@@ -163,7 +212,7 @@ export function DecisionCardScreen({
                 type="button"
                 role="radio"
                 aria-checked={selected}
-                onClick={() => onEvaluatorStatus(action.status)}
+                onClick={() => handleRecord(action.status)}
                 className={`min-h-11 rounded-2xl border px-4 py-3.5 text-left text-sm font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 ${
                   selected
                     ? "border-slate-400 bg-slate-800 text-white"
@@ -175,8 +224,40 @@ export function DecisionCardScreen({
             );
           })}
         </div>
+        <div className="space-y-2">
+          <label
+            htmlFor="evaluator-reason"
+            className="block text-sm font-medium text-slate-300"
+          >
+            {COPY.reasonLabel}
+          </label>
+          <textarea
+            ref={reasonRef}
+            id="evaluator-reason"
+            value={evaluatorReason}
+            rows={4}
+            onChange={(event) => handleReasonChange(event.target.value)}
+            aria-invalid={reasonError ? true : undefined}
+            aria-describedby={reasonDescribedBy}
+            className="w-full rounded-2xl border border-slate-700 bg-slate-900 px-4 py-3 text-base text-slate-100 placeholder:text-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
+          />
+          <p id={reasonHelperId} className="text-sm text-slate-500">
+            {COPY.reasonHelper}
+          </p>
+          <FieldError id={reasonErrorId} message={reasonError} />
+        </div>
         {explanation ? (
           <p className="text-sm leading-relaxed text-slate-400">{explanation}</p>
+        ) : null}
+        {showReason ? (
+          <p className="rounded-2xl border border-slate-800 bg-slate-900/60 px-4 py-3 text-sm leading-relaxed text-slate-400">
+            {COPY.reasonPrefix} {recordedReason}
+          </p>
+        ) : null}
+        {explanation && recordedName ? (
+          <p className="text-sm leading-relaxed text-slate-500">
+            {COPY.recordedByPrefix} {recordedName}.
+          </p>
         ) : null}
       </section>
 

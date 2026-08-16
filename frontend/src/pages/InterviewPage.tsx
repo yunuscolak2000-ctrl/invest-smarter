@@ -195,7 +195,11 @@ export default function InterviewPage() {
         <DecisionCardScreen
           view={wizard.decisionView}
           evaluatorStatus={wizard.evaluatorStatus}
-          onEvaluatorStatus={wizard.setEvaluatorStatus}
+          evaluatorName={wizard.evaluatorName}
+          evaluatorReason={wizard.evaluatorReason}
+          onEvaluatorName={wizard.setEvaluatorName}
+          onEvaluatorReason={wizard.setEvaluatorReason}
+          onRecordDecision={wizard.recordEvaluatorDecision}
         />
       ) : null}
     </WizardShell>

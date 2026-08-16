@@ -33,11 +33,9 @@ English words that match an answer (for example “hypothesis” in a sentence) 
 - Whether `25_100m` is treated as ≥ 100m (it must not be; Average already uses `25_100m` with a non-hypothesis demand)
 - Market / Financial / Strategic engines, scores, or bars
 - Persistence, export, PDF, backend
-- Named evaluator, amend reason, timestamps, or audit log
+- Login, timestamps, or audit log
 
-Evaluator accept / amend / reject is a **client overlay** on the snapshot. It does not change posture, confidence, conditions, or the frozen draft.
-
-The Decision Card renders `RecommendationSnapshot` (`frozenDraft` + `decisionObject` + `evaluatorStatus`). Changing any interview answer clears that snapshot. See recommendation creates a **new** snapshot. Do not persist yet. Do not show snapshot id or timestamp on the card.
+Evaluator name and reason are **client overlay** fields on the snapshot. They do not change posture, confidence, conditions, or the frozen draft. Blank name is allowed. Accept does not require a reason. Amend and reject do. Changing any interview answer still clears the snapshot.
 
 ## How to verify now
 

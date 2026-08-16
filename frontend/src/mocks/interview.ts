@@ -546,6 +546,19 @@ export const WIZARD_COPY = {
         "The evaluator amended this recommendation. The rules output remains unchanged.",
       rejected:
         "The evaluator rejected this recommendation. The rules output remains unchanged.",
+      nameLabel: "Evaluator name",
+      nameHelper:
+        "Use the person or desk responsible for this recommendation.",
+      namePlaceholder: "e.g. Investment Desk",
+      reasonLabel: "Reason",
+      reasonHelper:
+        "Record the evaluator’s reason if the recommendation is amended or rejected.",
+      recordedByPrefix: "Recorded by",
+      reasonPrefix: "Reason:",
+      amendReasonError:
+        "Add a reason before marking this recommendation as amended.",
+      rejectReasonError:
+        "Add a reason before marking this recommendation as rejected.",
     },
   },
 } as const;
