@@ -14,8 +14,7 @@
  * not_sure uses private copy. Language is en by default and persists
  * separately. Changing language must not change rules.v0.1.
  *
- * Later, with Vitest:
- *   import { verifyDecisionRulesV01 } from "./decisionRulesV01.qa";
+ * Automated wrapper: decisionRulesV01.test.ts
  *   expect(verifyDecisionRulesV01().failed).toBe(0);
  */
 

@@ -2,7 +2,7 @@
 
 Lightweight, deterministic coverage for the intake policy. Same draft always yields the same Decision Object. No AI. No UI change.
 
-The executable checks live in `frontend/src/lib/decisionRulesV01.qa.ts` and the drafts in `frontend/src/lib/decisionRulesV01.fixtures.ts`.
+The executable checks live in `frontend/src/lib/decisionRulesV01.qa.ts` and the drafts in `frontend/src/lib/decisionRulesV01.fixtures.ts`. `npm run test --prefix frontend` wraps the same helper. `/qa/decision` remains the visual Decision Card runner.
 
 Internal UI: open `/qa/decision`. It runs the same fixtures through `evaluateDecisionV01` → `presentDecisionCard` → the real Decision Card. The fixture snapshot stays in page state and **does not** write to localStorage. The customer Welcome/wizard path is unchanged. There is no link to this route from Welcome.
 
@@ -86,23 +86,14 @@ Q9 and Q10 keep the same stored enums. Labels and advisor copy follow `projectCo
 - Refreshing `/qa/decision` does **not** restore the fixture. The user’s Welcome/interview localStorage keys must be unchanged.
 - “Decision rules QA: Passed / Failed” runs `verifyDecisionRulesV01()` in memory.
 
-**B. Call the helper** from a future test file or a throwaway console:
+**B. Automated Vitest wrapper**
 
-```ts
-import { verifyDecisionRulesV01 } from "./decisionRulesV01.qa";
+`frontend/src/lib/decisionRulesV01.test.ts` calls the same helper:
 
-const report = verifyDecisionRulesV01();
-// report.failed === 0
+```
+npm run test --prefix frontend
 ```
 
-The helper is also invoked on `/qa/decision`. It is not a npm script and is not part of the customer workflow.
-
-## What should become automated tests later
-
-When Vitest (or equivalent) is added for other reasons:
-
-1. One test: `expect(verifyDecisionRulesV01().failed).toBe(0)`.
-2. Do not re-encode the table in the spec file.
-3. Still do not assert on Decision Card layout, copy tone beyond the leak rules, or engine IDs in the presenter.
+That is `expect(verifyDecisionRulesV01().failed).toBe(0)`. It does not re-encode the fixture table. `/qa/decision` still exists for visual Decision Card checks and is not replaced by this test.
 
 v0.1 may only emit `proceed_with_conditions` or `defer`. If a fixture produces `proceed` or `do_not_pursue`, the engine is wrong — do not “fix” the fixture.
