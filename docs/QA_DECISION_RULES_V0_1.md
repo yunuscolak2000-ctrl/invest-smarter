@@ -35,7 +35,9 @@ English words that match an answer (for example “hypothesis” in a sentence) 
 - Persistence, export, PDF, backend
 - Named evaluator, amend reason, timestamps, or audit log
 
-Evaluator accept / amend / reject is a **client overlay** on the Decision Card. It does not change posture, confidence, or conditions. Re-run `verifyDecisionRulesV01()` the same way after recording a status; the Decision Object must be identical.
+Evaluator accept / amend / reject is a **client overlay** on the snapshot. It does not change posture, confidence, conditions, or the frozen draft.
+
+The Decision Card renders `RecommendationSnapshot` (`frozenDraft` + `decisionObject` + `evaluatorStatus`). Changing any interview answer clears that snapshot. See recommendation creates a **new** snapshot. Do not persist yet. Do not show snapshot id or timestamp on the card.
 
 ## How to verify now
 

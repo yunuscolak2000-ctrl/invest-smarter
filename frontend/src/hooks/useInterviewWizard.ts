@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import { presentDecisionCard } from "../lib/presentDecisionCard";
+import { createRecommendationSnapshot } from "../lib/createRecommendationSnapshot";
 import {
   validateBuyerType,
   validateCapitalScale,
@@ -15,13 +16,12 @@ import {
   validateSector,
   validateSiteControl,
 } from "../lib/interviewValidation";
-import { evaluateDecisionV01 } from "../lib/decisionRulesV01";
 import { getCountry } from "../mocks/countries";
 import { MINUTES_LEFT_BY_STEP, WIZARD_COPY } from "../mocks/interview";
 import {
   DEFAULT_EVALUATOR_STATUS,
-  type DecisionObjectV01,
   type EvaluatorDecisionStatus,
+  type RecommendationSnapshot,
 } from "../types/decision";
 import {
   EMPTY_INTERVIEW_DRAFT,
@@ -90,12 +90,7 @@ export function useInterviewWizard() {
   const [step, setStep] = useState<WizardStepId>("framing");
   const [draft, setDraft] = useState<InterviewDraft>(EMPTY_INTERVIEW_DRAFT);
   const [error, setError] = useState<string | null>(null);
-  const [recommendation, setRecommendation] = useState<DecisionObjectV01 | null>(
-    null
-  );
-  const [evaluatorStatus, setEvaluatorStatus] = useState<EvaluatorDecisionStatus>(
-    DEFAULT_EVALUATOR_STATUS
-  );
+  const [snapshot, setSnapshot] = useState<RecommendationSnapshot | null>(null);
   const fieldsetRef = useRef<HTMLFieldSetElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const ackRef = useRef<HTMLInputElement>(null);
@@ -103,23 +98,22 @@ export function useInterviewWizard() {
   function patchDraft(patch: Partial<InterviewDraft>) {
     setDraft((current) => ({ ...current, ...patch }));
     setError(null);
-    setRecommendation(null);
-    setEvaluatorStatus(DEFAULT_EVALUATOR_STATUS);
+    setSnapshot(null);
   }
 
-  function validateStep(current: WizardStepId, snapshot: InterviewDraft) {
-    if (current === "q1") return validateOpportunityType(snapshot);
-    if (current === "q2") return validateSector(snapshot);
-    if (current === "q3") return validateProduct(snapshot);
-    if (current === "q4") return validateCountry(snapshot);
-    if (current === "q5") return validateLocation(snapshot);
-    if (current === "q6") return validateDevelopmentStage(snapshot);
-    if (current === "q7") return validateCapitalScale(snapshot);
-    if (current === "q8") return validateEvaluationContext(snapshot);
-    if (current === "q9") return validateBuyerType(snapshot);
-    if (current === "q10") return validateDemandCertainty(snapshot);
-    if (current === "q11") return validateSiteControl(snapshot);
-    if (current === "q12") return validateDecisionNeeded(snapshot);
+  function validateStep(current: WizardStepId, currentDraft: InterviewDraft) {
+    if (current === "q1") return validateOpportunityType(currentDraft);
+    if (current === "q2") return validateSector(currentDraft);
+    if (current === "q3") return validateProduct(currentDraft);
+    if (current === "q4") return validateCountry(currentDraft);
+    if (current === "q5") return validateLocation(currentDraft);
+    if (current === "q6") return validateDevelopmentStage(currentDraft);
+    if (current === "q7") return validateCapitalScale(currentDraft);
+    if (current === "q8") return validateEvaluationContext(currentDraft);
+    if (current === "q9") return validateBuyerType(currentDraft);
+    if (current === "q10") return validateDemandCertainty(currentDraft);
+    if (current === "q11") return validateSiteControl(currentDraft);
+    if (current === "q12") return validateDecisionNeeded(currentDraft);
     return null;
   }
 
@@ -196,14 +190,13 @@ export function useInterviewWizard() {
       return;
     }
 
-    const decision = evaluateDecisionV01(draft);
-    if (!decision) {
+    const next = createRecommendationSnapshot(draft);
+    if (!next) {
       setError(WIZARD_COPY.review.incompleteError);
       return;
     }
 
-    setRecommendation(decision);
-    setEvaluatorStatus(DEFAULT_EVALUATOR_STATUS);
+    setSnapshot(next);
     moveTo("decision");
   }
 
@@ -282,6 +275,12 @@ export function useInterviewWizard() {
     patchDraft({ decisionNeeded: value });
   }
 
+  function setEvaluatorStatus(status: EvaluatorDecisionStatus) {
+    setSnapshot((current) =>
+      current ? { ...current, evaluatorStatus: status } : current
+    );
+  }
+
   const isQuestionStep = step.startsWith("q");
   const question = isQuestionStep
     ? {
@@ -291,8 +290,12 @@ export function useInterviewWizard() {
     : undefined;
 
   const decisionView =
-    recommendation && step === "decision"
-      ? presentDecisionCard(recommendation, draft, evaluatorStatus)
+    snapshot && step === "decision"
+      ? presentDecisionCard(
+          snapshot.decisionObject,
+          snapshot.frozenDraft,
+          snapshot.evaluatorStatus
+        )
       : null;
 
   return {
@@ -302,12 +305,15 @@ export function useInterviewWizard() {
     fieldsetRef,
     inputRef,
     ackRef,
-    workingTitle: workingTitleFrom(draft),
+    workingTitle:
+      snapshot && step === "decision"
+        ? workingTitleFrom(snapshot.frozenDraft)
+        : workingTitleFrom(draft),
     questionNumber: question?.number,
     questionTotal: WIZARD_QUESTION_TOTAL,
     minutesLeft: question?.minutesLeft,
     decisionView,
-    evaluatorStatus,
+    evaluatorStatus: snapshot?.evaluatorStatus ?? DEFAULT_EVALUATOR_STATUS,
     setEvaluatorStatus,
     goPrevious,
     goNext,

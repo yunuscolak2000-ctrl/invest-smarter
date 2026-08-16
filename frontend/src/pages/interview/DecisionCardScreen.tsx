@@ -79,6 +79,9 @@ export function DecisionCardScreen({
         </p>
         <p className="text-sm leading-relaxed text-slate-400">{view.meta}</p>
         <p className="text-sm leading-relaxed text-slate-500">{view.status}</p>
+        <p className="text-xs leading-relaxed text-slate-600">
+          {WIZARD_COPY.decision.snapshotNote}
+        </p>
       </header>
 
       <section className="space-y-3" aria-label="Decision">

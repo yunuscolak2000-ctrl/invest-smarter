@@ -532,6 +532,7 @@ export const WIZARD_COPY = {
       "Recommendation could not be produced. Return to Review.",
     nextCommission:
       "Do not commission a feasibility study on this recommendation.",
+    snapshotNote: "Recommendation snapshot created for this review.",
     evaluator: {
       sectionLabel: "Evaluator decision",
       helper:

@@ -1,8 +1,10 @@
 /**
  * Lightweight rules.v0.1 QA. Not a test runner. Not imported by the UI.
  *
- * Evaluator status (Sprint 3.5) is a client overlay. It must not change
- * posture, confidence, or conditions. Do not pass it into evaluateDecisionV01.
+ * Evaluator status and RecommendationSnapshot are client overlays.
+ * They must not change posture, confidence, or conditions.
+ * Do not pass evaluator status into evaluateDecisionV01.
+ * The card must present snapshot.frozenDraft, not a later live draft.
  *
  * Later, with Vitest:
  *   import { verifyDecisionRulesV01 } from "./decisionRulesV01.qa";
@@ -12,6 +14,7 @@
 import type { ConditionId, DecisionObjectV01 } from "../types/decision";
 import type { InterviewDraft } from "../types/interview";
 import { evaluateDecisionV01 } from "./decisionRulesV01";
+import { createRecommendationSnapshot } from "./createRecommendationSnapshot";
 import {
   FIXTURE_AVERAGE,
   FIXTURE_BANK_HYPOTHESIS,
@@ -352,8 +355,85 @@ function evaluatorOverlayChecks(): QaCheck[] {
   return checks;
 }
 
+function snapshotChecks(): QaCheck[] {
+  const first = createRecommendationSnapshot(FIXTURE_STRONG);
+  const second = createRecommendationSnapshot(FIXTURE_STRONG);
+  if (!first || !second) {
+    return [
+      check(
+        "snapshot",
+        false,
+        "strong fixture must produce a recommendation snapshot"
+      ),
+    ];
+  }
+
+  const mutatedLive = {
+    ...FIXTURE_STRONG,
+    productSummary: "Mutated after freeze",
+    evaluationContext: "bank_screen" as const,
+  };
+  const frozenView = presentDecisionCard(
+    first.decisionObject,
+    first.frozenDraft,
+    first.evaluatorStatus
+  );
+  const leakedLive = presentDecisionCard(
+    first.decisionObject,
+    mutatedLive,
+    first.evaluatorStatus
+  );
+  const accepted: typeof first = {
+    ...first,
+    evaluatorStatus: "accepted",
+  };
+
+  return [
+    check(
+      "snapshot",
+      first.evaluatorStatus === "not_accepted",
+      "new snapshot starts as not accepted"
+    ),
+    check(
+      "snapshot",
+      first.id !== second.id,
+      "a new See recommendation must create a new snapshot"
+    ),
+    check(
+      "snapshot",
+      frozenView.productSummary === FIXTURE_STRONG.productSummary,
+      "card must render the frozen draft, not a later live draft"
+    ),
+    check(
+      "snapshot",
+      frozenView.productSummary !== leakedLive.productSummary,
+      "a live draft change must not be treated as the frozen snapshot"
+    ),
+    check(
+      "snapshot",
+      frozenView.bankDisclaimer === null && leakedLive.bankDisclaimer !== null,
+      "snapshot identity fields must not follow a later live draft"
+    ),
+    check(
+      "snapshot",
+      JSON.stringify(accepted.decisionObject) ===
+        JSON.stringify(first.decisionObject),
+      "evaluator status must not change the decision object"
+    ),
+    check(
+      "snapshot",
+      JSON.stringify(accepted.frozenDraft) === JSON.stringify(first.frozenDraft),
+      "evaluator status must not change the frozen draft"
+    ),
+  ];
+}
+
 export function verifyDecisionRulesV01(): QaReport {
-  const checks = [...CASES.flatMap(runCase), ...evaluatorOverlayChecks()];
+  const checks = [
+    ...CASES.flatMap(runCase),
+    ...evaluatorOverlayChecks(),
+    ...snapshotChecks(),
+  ];
   const failed = checks.filter((item) => !item.ok).length;
   return {
     passed: checks.length - failed,

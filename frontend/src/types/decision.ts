@@ -1,3 +1,5 @@
+import type { InterviewDraft } from "./interview";
+
 export type DecisionPosture =
   | "proceed"
   | "proceed_with_conditions"
@@ -13,6 +15,14 @@ export type EvaluatorDecisionStatus =
 
 export const DEFAULT_EVALUATOR_STATUS: EvaluatorDecisionStatus =
   "not_accepted";
+
+export type RecommendationSnapshot = {
+  id: string;
+  createdAt: string;
+  frozenDraft: InterviewDraft;
+  decisionObject: DecisionObjectV01;
+  evaluatorStatus: EvaluatorDecisionStatus;
+};
 
 export type ConfidenceBand = "low" | "medium" | "high";
 
