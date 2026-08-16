@@ -149,7 +149,7 @@ export type InterviewDraft = {
 
 export const EMPTY_INTERVIEW_DRAFT: InterviewDraft = {
   projectContext: null,
-  opportunityType: null;
+  opportunityType: null,
   sectorCode: null,
   sectorLabel: null,
   sectorOther: "",
